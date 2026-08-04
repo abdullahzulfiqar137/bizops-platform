@@ -1,0 +1,17 @@
+## Ignore Visual Studio & .NET build output
+.vs/
+bin/
+obj/
+publish/
+Logs/
+*.user
+*.userosscache
+*.sln.docstates
+appsettings.Development.json
+appsettings.Production.json
+
+## Ignore OS files
+.DS_Store
+Thumbs.db
+BusinessOperations.API/Backups/
+BusinessOperations.API/wwwroot/uploads/

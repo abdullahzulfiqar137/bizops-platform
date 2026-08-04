@@ -1,0 +1,191 @@
+<div class="ai-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">AI Operations Engine & Universal Chatbot</h1>
+      <p class="page-subtitle">
+        Ask any question (general, coding, or business stats). Chat history is saved to Database!
+      </p>
+    </div>
+    <button (click)="loadAiData()" class="btn-refresh" title="Re-run AI engine analysis on current database">
+      🤖 Regenerate Insights
+    </button>
+  </div>
+
+  <!-- ChatGPT Interactive Assistant Box -->
+  <div class="chat-card">
+    <div class="chat-header">
+      <div class="chat-title">
+        <span class="bot-avatar">🤖</span>
+        <div>
+          <h3>Universal AI Assistant</h3>
+          <span class="bot-status">🟢 Online & Connected to Database</span>
+        </div>
+      </div>
+      <div class="header-btns">
+        <button (click)="toggleHistory()" class="btn-history-toggle" title="View Chat History">
+          📜 History ▾
+        </button>
+        <button (click)="startNewChat()" class="btn-new-chat-head" title="Start New Conversation">
+          + New Chat
+        </button>
+      </div>
+    </div>
+
+    <!-- History Drawer Panel -->
+    @if (showHistory) {
+      <div class="history-panel">
+        <div class="history-panel-header">
+          <h4>History ▾</h4>
+          <div style="display: flex; gap: 8px;">
+            <button (click)="clearAllDbHistory()" class="btn-clear-db" title="Clear all history from Database">🗑️ Clear DB</button>
+            <button (click)="startNewChat()" class="btn-new-chat-panel">+ New Chat</button>
+          </div>
+        </div>
+        
+        <div class="history-scroll-area">
+          @if (isLoadingHistory) {
+            <div class="history-status-msg">Loading conversation history...</div>
+          } @else if (historyGroups.length === 0) {
+            <div class="history-status-msg">No past chat sessions found in Database.</div>
+          } @else {
+            @for (group of historyGroups; track group.period) {
+              <div class="history-group">
+                <div class="history-date-label">
+                  <span>{{ group.period }}</span>
+                  <hr class="group-line" />
+                </div>
+                @for (sess of group.sessions; track sess.sessionId) {
+                  <div class="history-item-pill" [class.active]="sess.sessionId === sessionId" (click)="selectHistorySession(sess)" title="{{ sess.firstPrompt }}">
+                    <span class="item-title-text">{{ sess.title }}</span>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Quick Prompt Chips -->
+    <div class="quick-prompts">
+      <button (click)="sendQuickPrompt('What can you do for me?')" class="chip" title="Ask AI capabilities">
+        💬 What can you do?
+      </button>
+      <button (click)="sendQuickPrompt('What is this platform about?')" class="chip" title="Platform overview">
+        🏢 About this Platform
+      </button>
+      <button (click)="sendQuickPrompt('Which items need restocking?')" class="chip" title="Check low stock">
+        📦 Stock Inventory Status
+      </button>
+      <button (click)="sendQuickPrompt('Show my sales overview')" class="chip" title="Check revenue">
+        📊 Sales & Financial Summary
+      </button>
+      <button (click)="sendQuickPrompt('How can I increase business profit margins?')" class="chip" title="Business Advice">
+        💡 Business Advice
+      </button>
+    </div>
+
+    <!-- Chat Conversation Messages -->
+    <div #chatContainer class="chat-messages" (click)="onDocumentClick($event)">
+      @for (msg of chatMessages; track $index) {
+        <div class="message-wrapper" [class.user-msg]="msg.sender === 'user'" [class.assistant-msg]="msg.sender === 'assistant'">
+          @if (msg.sender === 'assistant') {
+            <div class="msg-avatar">🤖</div>
+          }
+          <div class="msg-bubble">
+            <div class="msg-text" [innerHTML]="formatMessageText(msg.text)"></div>
+            <span class="msg-time">{{ msg.time | date:'shortTime' }}</span>
+          </div>
+        </div>
+      }
+
+      @if (isThinking) {
+        <div class="message-wrapper assistant-msg">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble thinking-bubble">
+            <span class="spinner-dot"></span>
+            <span>Universal AI Assistant is processing...</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Chat Input Bar -->
+    <div class="chat-input-bar">
+      <input
+        type="text"
+        [(ngModel)]="userQuery"
+        (keyup.enter)="sendMessage()"
+        placeholder="Ask ANYTHING! (e.g. business data, website guide, coding, general questions)..."
+        [disabled]="isThinking"
+      />
+      <button (click)="sendMessage()" [disabled]="!userQuery.trim() || isThinking" class="btn-send" title="Send message to AI">
+        <span>Send</span> ➔
+      </button>
+    </div>
+  </div>
+
+  <!-- Executive Digest Box -->
+  @if (digest) {
+    <div class="digest-card">
+      <h3>Executive Business Summary</h3>
+      <p class="digest-text">{{ digest.executiveSummary }}</p>
+
+      <div class="digest-sections">
+        <div class="digest-box">
+          <h4>🌟 Key Operational Highlights</h4>
+          <ul>
+            @for (highlight of digest.keyHighlights; track highlight) {
+              <li>{{ highlight }}</li>
+            }
+          </ul>
+        </div>
+
+        <div class="digest-box">
+          <h4>⚠️ Risk & Vulnerability Alerts</h4>
+          <ul>
+            @for (risk of digest.riskAlerts; track risk) {
+              <li class="text-danger">{{ risk }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Detailed Insights Cards -->
+  <h3 class="section-title">Actionable Automated AI Recommendations</h3>
+  <div class="insights-grid">
+    @for (insight of insights; track insight.id) {
+      <div class="insight-card" [class]="'severity-border-' + insight.severity">
+        <div class="card-top">
+          <span class="badge" [class]="getSeverityBadge(insight.severity)">
+            {{ insight.severityDescription }}
+          </span>
+          <span class="category-chip">{{ insight.categoryDescription }}</span>
+          <span class="score-chip">Impact Score: {{ insight.impactScore }}/10</span>
+        </div>
+
+        <h4 class="insight-title">{{ insight.title }}</h4>
+        <p class="insight-desc">{{ insight.description }}</p>
+
+        <div class="action-box">
+          <strong>💡 Actionable Recommendation:</strong>
+          <p>{{ insight.actionRecommendation }}</p>
+        </div>
+
+        <div class="card-footer">
+          <span>Generated: {{ insight.generatedAtUtc | date: 'mediumTime' }}</span>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-ai-card">
+        <div class="empty-icon">🤖</div>
+        <h4>No Critical Insights Triggered Yet</h4>
+        <p>
+          The AI Engine is active! As you create Products, Sales Invoices, Purchases, and Expenses in your database, the AI will automatically generate low-stock alerts, margin recommendations, and cash flow warnings.
+        </p>
+      </div>
+    }
+  </div>
+</div>

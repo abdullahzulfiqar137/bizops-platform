@@ -1,0 +1,7 @@
+@if (hasTable) {
+  <div class="export-bar" aria-label="Data export options">
+    <span class="export-label">Export visible data</span>
+    <button type="button" (click)="exportCsv()" title="Download visible table as CSV">CSV</button>
+    <button type="button" (click)="exportExcel()" title="Download visible table for Microsoft Excel">Excel</button>
+  </div>
+}

@@ -1,0 +1,27 @@
+.empty-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 12px;
+  color: #94a3b8;
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-title { font-size: 1.1rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px; }
+.empty-description { font-size: 0.875rem; color: #64748b; max-width: 360px; line-height: 1.5; }
+.btn-action {
+  margin-top: 16px;
+  padding: 8px 18px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-action:hover { background: #1d4ed8; }

@@ -1,0 +1,22 @@
+.users-page { display: flex; flex-direction: column; gap: 20px; }
+.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+.search-input { flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; outline: none; }
+.btn-filter { background: #1e293b; color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.roles-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+.actions { display: flex; gap: 8px; }
+.btn-action { padding: 6px 12px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+.btn-deactivate { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+.btn-roles { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+.pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 0.85rem; color: #64748b; }
+.page-buttons { display: flex; gap: 8px; }
+.page-buttons button { padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+.page-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-card { background: white; border-radius: 8px; padding: 24px; width: 100%; max-width: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.roles-checkbox-list { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+.checkbox-label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+.btn-cancel { padding: 8px 16px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; }
+.btn-save { padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }

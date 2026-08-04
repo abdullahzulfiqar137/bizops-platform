@@ -1,0 +1,490 @@
+<div class="subscription-page">
+  <!-- Top Page Banner -->
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">ENTERPRISE SAAS BILLING CENTER</span>
+      <h1 class="page-title">Subscription & Billing Account Center</h1>
+      <p class="page-subtitle">Manage SaaS licenses, payment methods, company tax info, and billing receipts.</p>
+    </div>
+    <div class="billing-cycle-toggle">
+      <span [class.active]="!isAnnual">Monthly</span>
+      <label class="switch">
+        <input type="checkbox" [(ngModel)]="isAnnual" />
+        <span class="slider round"></span>
+      </label>
+      <span [class.active]="isAnnual">Annual <span class="discount-badge">Save 20%</span></span>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="data-state"><span class="state-spinner"></span><strong>Loading billing account center...</strong></div>
+  } @else {
+    <!-- KPI Summary Cards Row -->
+    <section class="kpi-cards-grid">
+      <div class="kpi-card highlight-blue">
+        <div class="kpi-head">
+          <span class="kpi-label">Active License Tier</span>
+          <span class="kpi-icon">👑</span>
+        </div>
+        <strong class="kpi-val">{{ currentSub?.subscription?.plan?.name ?? 'No active plan' }}</strong>
+        <span class="kpi-subtext">Status: <strong>{{ currentSub ? getStatusText(currentSub.subscription.status) : 'Not subscribed' }}</strong></span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">Annual Billing Spend</span>
+          <span class="kpi-icon">💰</span>
+        </div>
+        <strong class="kpi-val">{{ getPlanPrice(currentSub?.subscription?.plan) | businessCurrency }}</strong>
+        <span class="kpi-subtext">Auto-Renew: <strong>{{ currentSub?.subscription?.autoRenew ? 'Enabled 🔄' : 'Disabled ⏸️' }}</strong></span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">User Seats Quota</span>
+          <span class="kpi-icon">👥</span>
+        </div>
+        <strong class="kpi-val">{{ currentSub?.usage?.activeUsers }} / {{ currentSub?.usage?.maxUsers }} Seats</strong>
+        <span class="kpi-subtext">{{ (currentSub?.usage?.maxUsers ?? 15) - (currentSub?.usage?.activeUsers ?? 1) }} Seats Available</span>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">Account Good Standing</span>
+          <span class="kpi-icon">🛡️</span>
+        </div>
+        <strong class="kpi-val text-green">100% Compliant</strong>
+        <span class="kpi-subtext">🔒 256-Bit SSL Encrypted Account</span>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs Bar -->
+    <nav class="billing-tabs-nav">
+      <button [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+        📊 Overview & Quotas
+      </button>
+      <button [class.active]="activeTab === 'plans'" (click)="activeTab = 'plans'">
+        🚀 Tier Plans & Upgrade
+      </button>
+      <button [class.active]="activeTab === 'payment-methods'" (click)="activeTab = 'payment-methods'">
+        💳 Payment Methods ({{ savedPaymentMethods.length }})
+      </button>
+      <button [class.active]="activeTab === 'company-profile'" (click)="activeTab = 'company-profile'">
+        🏢 Company Tax Profile
+      </button>
+      <button [class.active]="activeTab === 'invoices'" (click)="activeTab = 'invoices'">
+        📜 Billing Receipts ({{ invoices.length }})
+      </button>
+    </nav>
+
+    <!-- TAB 1: OVERVIEW & QUOTAS -->
+    @if (activeTab === 'overview') {
+      <div class="tab-pane animate-fade-in">
+        <section class="active-sub-card">
+          <div class="sub-header">
+            <div class="sub-info">
+              <span class="status-badge" [class.active]="currentSub?.subscription?.status === 2">
+                {{ getStatusText(currentSub?.subscription?.status) }}
+              </span>
+              <h2>{{ currentSub?.subscription?.plan?.name ?? 'No active subscription' }}</h2>
+              <p>Primary SaaS License • Next Renewal: {{ currentSub?.subscription?.endDateUtc | date:'mediumDate' }}</p>
+            </div>
+            <div class="sub-price">
+              <strong>{{ getPlanPrice(currentSub?.subscription?.plan) | businessCurrency }}</strong>
+              <small>/ {{ isAnnual ? 'year' : 'month' }}</small>
+            </div>
+          </div>
+
+          <div class="usage-meters-grid">
+            <div class="meter-box">
+              <div class="meter-head">
+                <span>Active User Seats</span>
+                <strong>{{ currentSub?.usage?.activeUsers }} / {{ currentSub?.usage?.maxUsers }} Users</strong>
+              </div>
+              <div class="progress-bar">
+                <div class="fill" [style.width.%]="getUserUsagePercent()"></div>
+              </div>
+            </div>
+
+            <div class="meter-box">
+              <div class="meter-head">
+                <span>Monthly Sales Transaction Limit</span>
+                <strong>{{ currentSub?.usage?.monthlySales }} / {{ currentSub?.usage?.maxMonthlySales }} Sales</strong>
+              </div>
+              <div class="progress-bar">
+                <div class="fill" [style.width.%]="getSalesUsagePercent()"></div>
+              </div>
+            </div>
+
+            <div class="meter-box feature-box">
+              <div class="meter-head">
+                <span>Included Active Enterprise Features</span>
+              </div>
+              <div class="features-tags">
+                <span class="tag">✨ DeepSeek AI Assistant</span>
+                <span class="tag">📄 QuestPDF Invoices</span>
+                <span class="tag">🏛️ Double-Entry Accounting</span>
+                <span class="tag">⚡ SignalR WebSockets</span>
+                <span class="tag">🔐 2FA TOTP Security</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- TAB 2: TIER PLANS & UPGRADES -->
+    @if (activeTab === 'plans') {
+      <div class="tab-pane animate-fade-in">
+        <section class="pricing-plans-section">
+          <h2 class="section-title">Available Subscription Tier Plans</h2>
+          
+          <div class="plans-grid">
+            @for (plan of plans; track plan.id) {
+              <div class="plan-card" [class.popular]="plan.code === 'PRO'" [class.current-plan]="isCurrentPlan(plan.id)">
+                @if (plan.code === 'PRO') {
+                  <span class="popular-badge">POPULAR CHOICE</span>
+                }
+                
+                <h3 class="plan-name">{{ plan.name }}</h3>
+                <p class="plan-desc">{{ plan.description }}</p>
+                
+                <div class="plan-cost">
+                  <span class="currency">$</span>
+                  <span class="amount">{{ isAnnual ? plan.annualPrice : plan.monthlyPrice }}</span>
+                  <span class="period">/ {{ isAnnual ? 'year' : 'month' }}</span>
+                </div>
+
+                <ul class="plan-features">
+                  <li>✅ Up to <strong>{{ plan.maxUsers }} Active Users</strong></li>
+                  <li>✅ Up to <strong>{{ plan.maxSalesPerMonth | number }} Sales / mo</strong></li>
+                  <li>{{ plan.enablePdfGeneration ? '✅' : '❌' }} QuestPDF Tax Invoices</li>
+                  <li>{{ plan.enableAiAssistant ? '✅' : '❌' }} DeepSeek AI Assistant</li>
+                  <li>{{ plan.enableDoubleEntryAccounting ? '✅' : '❌' }} Double-Entry General Ledger</li>
+                  <li>✅ 2FA TOTP Security & SignalR</li>
+                </ul>
+
+                <button
+                  type="button"
+                  class="btn-choose-plan"
+                  [disabled]="isCurrentPlan(plan.id) || upgrading"
+                  (click)="openCheckoutModal(plan)"
+                >
+                  {{ isCurrentPlan(plan.id) ? 'Current Active Plan' : 'Subscribe / Select Payment Method ➔' }}
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- TAB 3: SAVED PAYMENT METHODS -->
+    @if (activeTab === 'payment-methods') {
+      <div class="tab-pane animate-fade-in">
+        <section class="billing-card-section">
+          <div class="section-header-flex">
+            <div>
+              <h2>💳 Saved Payment Methods & Cards</h2>
+              <p>Manage your primary payment methods for automatic subscription renewals.</p>
+            </div>
+            <button class="btn-add-pm" (click)="showAddPmModal = true">＋ Add Payment Method</button>
+          </div>
+
+          <div class="payment-methods-grid">
+            @for (pm of savedPaymentMethods; track pm.id) {
+              <div class="pm-card" [class.is-default]="pm.isDefault">
+                <div class="pm-head">
+                  <span class="pm-brand">{{ pm.brandIcon }} {{ pm.label }}</span>
+                  @if (pm.isDefault) {
+                    <span class="default-badge">DEFAULT PAYMENT</span>
+                  }
+                </div>
+                <p class="pm-sub">{{ pm.sublabel }}</p>
+                <div class="pm-actions">
+                  @if (!pm.isDefault) {
+                    <button (click)="setDefaultPaymentMethod(pm.id)" class="btn-link">Set as Default</button>
+                  }
+                  <button (click)="removePaymentMethod(pm.id)" class="btn-link text-red">Remove</button>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- TAB 4: COMPANY TAX & BILLING PROFILE -->
+    @if (activeTab === 'company-profile') {
+      <div class="tab-pane animate-fade-in">
+        <section class="billing-card-section">
+          <div class="card-head">
+            <h2>🏢 Company Billing & Tax Information</h2>
+            <p>These details are automatically printed on your official PDF tax invoices and receipts.</p>
+          </div>
+
+          <div class="profile-form-grid">
+            <div class="form-group">
+              <label>Legal Company Name</label>
+              <input type="text" [(ngModel)]="companyProfile.legalName" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>Tax Identification Number (VAT / NTN)</label>
+              <input type="text" [(ngModel)]="companyProfile.taxId" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>Billing Contact Email</label>
+              <input type="email" [(ngModel)]="companyProfile.billingEmail" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>Invoice Currency Code</label>
+              <select [(ngModel)]="companyProfile.currencyCode" class="form-control">
+                <option value="USD">USD ($) - US Dollar</option>
+                <option value="EUR">EUR (€) - Euro</option>
+                <option value="GBP">GBP (£) - British Pound</option>
+                <option value="PKR">PKR (Rs) - Pakistani Rupee</option>
+                <option value="AED">AED (AED) - UAE Dirham</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label>Registered Billing Address</label>
+              <input type="text" [(ngModel)]="companyProfile.address" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>City & State</label>
+              <input type="text" [(ngModel)]="companyProfile.cityState" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>Country & Postal Code</label>
+              <input type="text" [(ngModel)]="companyProfile.countryZip" class="form-control" />
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn-save-profile" (click)="saveCompanyProfile()">Save Billing Profile</button>
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- TAB 5: BILLING RECEIPTS HISTORY -->
+    @if (activeTab === 'invoices') {
+      <div class="tab-pane animate-fade-in">
+        <section class="billing-history-card">
+          <div class="card-head">
+            <h2>📜 Official Billing Receipts & Paid Invoices</h2>
+            <p>Download receipts and verify past subscription billing transactions.</p>
+          </div>
+
+          <div class="table-responsive">
+            <table class="enterprise-table">
+              <thead>
+                <tr>
+                  <th>Receipt #</th>
+                  <th>Billing Date</th>
+                  <th>Subscription Plan</th>
+                  <th>Amount</th>
+                  <th>Payment Method</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inv of invoices; track inv.id) {
+                  <tr>
+                    <td><code>{{ inv.invoiceNumber }}</code></td>
+                    <td>{{ inv.billingDateUtc | date:'mediumDate' }}</td>
+                    <td><strong>{{ inv.subscription?.plan?.name ?? 'Professional Plan' }}</strong></td>
+                    <td><strong>{{ inv.amount | businessCurrency }}</strong></td>
+                    <td>{{ inv.paymentTransactionReference || 'Visa Card **** 4242' }}</td>
+                    <td><span class="badge badge-success">Paid ✅</span></td>
+                    <td>
+                      <button (click)="downloadReceipt(inv)" class="btn-receipt-dl" title="Download PDF Receipt">
+                        📄 Download PDF
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="7" class="empty">No billing receipts recorded yet.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    }
+  }
+
+  <!-- INTERACTIVE PAYMENT CHECKOUT MODAL -->
+  @if (showCheckoutModal && selectedPlan) {
+    <div class="checkout-overlay" (click)="closeCheckoutModal()"></div>
+    <div class="checkout-modal animate-slide-up">
+      <header class="checkout-header">
+        <div>
+          <h2>💳 Secure Payment & Plan Activation</h2>
+          <p>Complete checkout to activate <strong>{{ selectedPlan.name }}</strong></p>
+        </div>
+        <button class="btn-modal-close" (click)="closeCheckoutModal()">✕</button>
+      </header>
+
+      <div class="checkout-body">
+        <!-- Order Summary Section -->
+        <div class="order-summary-box">
+          <div class="summary-head">
+            <span class="plan-tag">{{ selectedPlan.name }}</span>
+            <span class="cycle-tag">{{ isAnnual ? 'Annual Billing (Save 20%)' : 'Monthly Billing' }}</span>
+          </div>
+
+          <div class="summary-breakdown">
+            <div class="line-item">
+              <span>Base Plan Fee</span>
+              <strong>{{ getPlanPrice(selectedPlan) | businessCurrency }}</strong>
+            </div>
+            <div class="line-item">
+              <span>Sales Tax / VAT (0%)</span>
+              <strong>$0.00</strong>
+            </div>
+            <div class="line-item total-line">
+              <span>Total Amount Due</span>
+              <strong class="total-amount">{{ getPlanPrice(selectedPlan) | businessCurrency }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods Selectors -->
+        <div class="payment-methods-tabs">
+          <label class="pm-tab" [class.selected]="selectedPaymentMethod === 'card'">
+            <input type="radio" name="pm" value="card" [(ngModel)]="selectedPaymentMethod" />
+            <span class="pm-icon">💳</span>
+            <span>Credit / Debit Card</span>
+          </label>
+
+          <label class="pm-tab" [class.selected]="selectedPaymentMethod === 'paypal'">
+            <input type="radio" name="pm" value="paypal" [(ngModel)]="selectedPaymentMethod" />
+            <span class="pm-icon">🅿️</span>
+            <span>PayPal</span>
+          </label>
+
+          <label class="pm-tab" [class.selected]="selectedPaymentMethod === 'wallet'">
+            <input type="radio" name="pm" value="wallet" [(ngModel)]="selectedPaymentMethod" />
+            <span class="pm-icon">🍏</span>
+            <span>Apple / Google Pay</span>
+          </label>
+
+          <label class="pm-tab" [class.selected]="selectedPaymentMethod === 'bank'">
+            <input type="radio" name="pm" value="bank" [(ngModel)]="selectedPaymentMethod" />
+            <span class="pm-icon">🏛️</span>
+            <span>Bank Transfer</span>
+          </label>
+        </div>
+
+        <!-- Payment Details Form Area -->
+        <div class="pm-details-form">
+          @if (selectedPaymentMethod === 'card') {
+            <div class="card-form-grid">
+              <div class="form-group col-span-2">
+                <label>Cardholder Name</label>
+                <input type="text" [(ngModel)]="cardForm.name" placeholder="John Doe" class="form-control" />
+              </div>
+              <div class="form-group col-span-2">
+                <label>Card Number</label>
+                <div class="card-input-wrapper">
+                  <input type="text" [(ngModel)]="cardForm.number" placeholder="4242 •••• •••• 4242" class="form-control" />
+                  <span class="card-brands">💳 Visa / MasterCard / Amex</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Expiry Date</label>
+                <input type="text" [(ngModel)]="cardForm.expiry" placeholder="MM/YY" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>Security Code (CVC)</label>
+                <input type="password" [(ngModel)]="cardForm.cvc" placeholder="123" maxlength="4" class="form-control" />
+              </div>
+            </div>
+          }
+
+          @if (selectedPaymentMethod === 'paypal') {
+            <div class="express-pay-box">
+              <span class="paypal-logo">🅿️ PayPal Express Checkout</span>
+              <p>You will be redirected to PayPal to complete your subscription authorization securely.</p>
+            </div>
+          }
+
+          @if (selectedPaymentMethod === 'wallet') {
+            <div class="express-pay-box">
+              <span class="wallet-logo">🍏 1-Touch Wallet Pay</span>
+              <p>Touch ID or Face ID verification will be requested on supported devices.</p>
+            </div>
+          }
+
+          @if (selectedPaymentMethod === 'bank') {
+            <div class="bank-details-box">
+              <p><strong>Direct Bank Wire Transfer (IBAN)</strong></p>
+              <code>IBAN: US92 BIZOPS 0041 9821 4451 09</code><br/>
+              <code>Swift / BIC: BIZOPUS33</code>
+              <p class="bank-note">Please include reference <strong>{{ selectedPlan.code }}-SUB</strong> during wire transfer.</p>
+            </div>
+          }
+        </div>
+
+        <div class="ssl-guarantee">
+          🔒 <strong>256-Bit SSL Encrypted & PCI-DSS Compliant Payment Gateway</strong>
+        </div>
+      </div>
+
+      <footer class="checkout-footer">
+        <button type="button" class="btn-cancel" (click)="closeCheckoutModal()">Cancel</button>
+        <button type="button" class="btn-confirm-pay" [disabled]="processingPayment" (click)="processPayment()">
+          {{ processingPayment ? 'Processing Secure Payment...' : '🔒 Confirm & Pay ' + (getPlanPrice(selectedPlan) | businessCurrency) }}
+        </button>
+      </footer>
+    </div>
+  }
+
+  <!-- ADD NEW PAYMENT METHOD MODAL -->
+  @if (showAddPmModal) {
+    <div class="checkout-overlay" (click)="showAddPmModal = false"></div>
+    <div class="checkout-modal animate-slide-up" style="max-width: 460px;">
+      <header class="checkout-header">
+        <div>
+          <h2>💳 Add New Payment Method</h2>
+          <p>Save a card or account for future billing.</p>
+        </div>
+        <button class="btn-modal-close" (click)="showAddPmModal = false">✕</button>
+      </header>
+
+      <div class="checkout-body">
+        <div class="card-form-grid">
+          <div class="form-group col-span-2">
+            <label>Cardholder Name</label>
+            <input type="text" [(ngModel)]="newPmForm.name" placeholder="John Doe" class="form-control" />
+          </div>
+          <div class="form-group col-span-2">
+            <label>Card Number</label>
+            <input type="text" [(ngModel)]="newPmForm.number" placeholder="4242 •••• •••• 4242" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="text" [(ngModel)]="newPmForm.expiry" placeholder="12/28" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>CVC</label>
+            <input type="password" [(ngModel)]="newPmForm.cvc" placeholder="888" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <footer class="checkout-footer">
+        <button class="btn-cancel" (click)="showAddPmModal = false">Cancel</button>
+        <button class="btn-confirm-pay" (click)="addNewPaymentMethod()">Save Card</button>
+      </footer>
+    </div>
+  }
+</div>

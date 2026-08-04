@@ -1,0 +1,63 @@
+.accounting-page { display: flex; flex-direction: column; gap: 18px; }
+.page-header { align-items: flex-end; display: flex; justify-content: space-between; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.eyebrow { color: #2563eb; font-size: .64rem; font-weight: 800; letter-spacing: .12em; }
+.primary { background: #2563eb; border: 0; border-radius: 8px; color: white; cursor: pointer; font-weight: 700; padding: 10px 15px; }
+.primary:disabled { opacity: .5; }
+.btn-sync { background: white; border: 1px solid #bfdbfe; border-radius: 8px; color: #1d4ed8; font-weight: 700; padding: 10px 15px; cursor: pointer; }
+.btn-sync:disabled { opacity: 0.6; cursor: wait; }
+.accounting-metrics { display: grid; gap: 12px; grid-template-columns: repeat(4, 1fr); }
+.accounting-metrics article { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 4px 12px rgba(15,23,42,.03); }
+.accounting-metrics small, .accounting-metrics strong { display: block; }
+.accounting-metrics small { color: #64748b; font-size: .68rem; font-weight: 700; text-transform: uppercase; }
+.accounting-metrics strong { font-size: 1.15rem; margin-top: 6px; font-weight: 800; }
+.accounting-metrics article.good { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.accounting-tabs { display: flex; gap: 6px; }
+.accounting-tabs button { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #64748b; cursor: pointer; font-weight: 700; padding: 9px 15px; transition: all 0.2s ease; }
+.accounting-tabs button.active { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+.accounting-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 24px rgba(15,23,42,.04); overflow: hidden; }
+.section-head { align-items: center; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; padding: 18px 20px; }
+.section-head h2 { font-size: 1.05rem; margin: 0; font-weight: 800; }
+.section-head p { color: #64748b; font-size: .75rem; margin: 3px 0 0; }
+.section-head > span { background: #fef2f2; border-radius: 15px; color: #b91c1c; font-size: .72rem; font-weight: 700; padding: 6px 12px; }
+.section-head > span.ok { background: #ecfdf5; color: #047857; }
+.accounting-card .table-responsive { padding: 0 20px 20px; }
+.accounting-card td, .accounting-card th { font-size: .8rem; padding: 12px 10px; }
+.source { background: #f1f5f9; border-radius: 12px; padding: 4px 9px; font-weight: 700; font-size: 0.72rem; }
+.account-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); padding: 20px; }
+.account-grid button { align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; display: flex; gap: 12px; padding: 14px; text-align: left; transition: all 0.2s ease; }
+.account-grid button:hover { border-color: #93c5fd; background: #eff6ff; }
+.account-grid button.selected { background: #eff6ff; border-color: #2563eb; }
+.account-grid span { flex: 1; }
+.account-grid strong, .account-grid small { display: block; }
+.account-grid small { color: #64748b; font-size: .7rem; margin-top: 2px; }
+.ledger { border-top: 1px solid #e2e8f0; padding: 18px 20px; }
+.ledger h3 { font-size: .92rem; font-weight: 800; margin-bottom: 12px; }
+.empty { text-align: center; color: #94a3b8; padding: 30px; }
+.balance-layout { display: grid; gap: 14px; grid-template-columns: repeat(2, 1fr); padding: 22px; }
+.balance-layout > div { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+.balance-layout h3 { color: #64748b; font-size: .75rem; font-weight: 700; text-transform: uppercase; margin: 0 0 8px; }
+.balance-layout strong { font-size: 1.25rem; font-weight: 800; }
+.balance-layout .total { background: #0f172a; color: #fff; grid-column: 1/-1; }
+.balance-layout .total h3 { color: #94a3b8; }
+.journal-overlay { align-items: center; background: rgba(15,23,42,.68); display: flex; inset: 0; justify-content: center; padding: 18px; position: fixed; z-index: 1300; }
+.journal-dialog { background: #fff; border-radius: 16px; max-width: 780px; overflow: hidden; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+.journal-dialog header { align-items: center; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; padding: 18px 24px; }
+.journal-dialog header span { color: #2563eb; font-size: .65rem; font-weight: 800; letter-spacing: .1em; }
+.journal-dialog h2 { font-size: 1.15rem; margin: 3px 0; font-weight: 800; }
+.journal-dialog header button { background: #f1f5f9; border: 0; border-radius: 7px; font-size: 1.2rem; height: 32px; width: 32px; cursor: pointer; }
+.journal-body { padding: 20px 24px; }
+.journal-body > label { color: #475569; font-size: .75rem; font-weight: 700; display: block; }
+.journal-body > label input { border: 1px solid #cbd5e1; border-radius: 8px; display: block; margin-top: 6px; padding: 10px; width: 100%; font-size: 0.85rem; }
+.journal-lines { border: 1px solid #e2e8f0; border-radius: 10px; margin-top: 15px; overflow: hidden; }
+.line { display: grid; gap: 10px; grid-template-columns: 2fr 1fr 1fr 34px; padding: 10px; align-items: center; }
+.line.heading { background: #f8fafc; color: #64748b; font-size: .65rem; font-weight: 800; text-transform: uppercase; }
+.line select, .line input { border: 1px solid #cbd5e1; border-radius: 7px; min-width: 0; padding: 8px; font-size: 0.82rem; }
+.line button { border: 0; background: #fee2e2; border-radius: 7px; color: #b91c1c; font-weight: 800; cursor: pointer; height: 32px; }
+.add-line { background: none; border: 0; color: #2563eb; cursor: pointer; font-size: .75rem; font-weight: 700; margin-top: 12px; }
+.journal-total { align-items: center; background: #f8fafc; border-radius: 10px; display: flex; gap: 20px; margin-top: 15px; padding: 12px 16px; font-size: 0.85rem; }
+.journal-total b { color: #b91c1c; font-weight: 800; margin-left: auto; }
+.journal-total b.ok { color: #047857; }
+.journal-dialog footer { background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end; padding: 14px 24px; }
+.cancel { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+@media(max-width:800px) { .accounting-metrics { grid-template-columns: repeat(2,1fr); } .account-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,26 @@
+<div class="skeleton-wrapper">
+  @if (type === 'card') {
+    <div class="skeleton-grid">
+      @for (item of countArray; track $index) {
+        <div class="skeleton-card">
+          <div class="shimmer-block title"></div>
+          <div class="shimmer-block value"></div>
+          <div class="shimmer-block subtitle"></div>
+        </div>
+      }
+    </div>
+  } @else if (type === 'table') {
+    <div class="skeleton-table">
+      @for (row of countArray; track $index) {
+        <div class="skeleton-row">
+          <div class="shimmer-block cell col-1"></div>
+          <div class="shimmer-block cell col-2"></div>
+          <div class="shimmer-block cell col-3"></div>
+          <div class="shimmer-block cell col-4"></div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="shimmer-block line" [style.height.px]="height"></div>
+  }
+</div>

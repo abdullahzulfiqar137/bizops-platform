@@ -1,0 +1,9 @@
+<div class="pagination-wrapper">
+  <span class="pagination-info">
+    Page <strong>{{ pageIndex }}</strong> of <strong>{{ totalPages || 1 }}</strong> (Total {{ totalCount }} items)
+  </span>
+  <div class="pagination-controls">
+    <button [disabled]="pageIndex <= 1" (click)="changePage(pageIndex - 1)">&lsaquo; Previous</button>
+    <button [disabled]="pageIndex >= totalPages" (click)="changePage(pageIndex + 1)">Next &rsaquo;</button>
+  </div>
+</div>

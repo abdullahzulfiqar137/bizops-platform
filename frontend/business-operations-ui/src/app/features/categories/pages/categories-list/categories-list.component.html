@@ -1,0 +1,123 @@
+<div class="categories-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Product Categories</h1>
+      <p class="page-subtitle">Organize and manage inventory product categories</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-create">+ Add Category</button>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Category Name</th>
+            <th>Category Type</th>
+            <th>Parent Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of categories; track cat.id) {
+            <tr>
+              <td><strong>{{ cat.name }}</strong></td>
+              <td><span class="type-pill">{{ cat.categoryType || 'Product' }}</span></td>
+              <td>{{ cat.parentCategory || 'Main Category' }}</td>
+              <td>{{ cat.description || '-' }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="cat.isActive" [class.badge-danger]="!cat.isActive">
+                  {{ cat.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>{{ cat.createdAtUtc | date:'shortDate' }}</td>
+              <td>
+                <div class="actions">
+                  <button (click)="openEditModal(cat)" class="btn-action">Edit</button>
+                  <button (click)="deleteCategory(cat.id)" class="btn-action btn-delete">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create / Edit Modal -->
+  @if (showModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>{{ editingCategory ? 'Edit Category' : 'Create Category' }}</h3>
+
+        <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+          <div class="form-group">
+            <label>Parent Category (Sub-category of)</label>
+            <select formControlName="parentCategory">
+              <option value="None">-- None (Main Category) --</option>
+              <option value="Electronics">📱 Electronics</option>
+              <option value="Grocery & Food">🍎 Grocery & Food</option>
+              <option value="Clothing & Fashion">👗 Clothing & Fashion</option>
+              <option value="Healthcare & Pharmacy">💊 Healthcare & Pharmacy</option>
+              <option value="Hardware & Tools">🔧 Hardware & Tools</option>
+              <option value="General">📂 General</option>
+              @for (c of categories; track c.id) {
+                @if (!editingCategory || c.id !== editingCategory.id) {
+                  <option [value]="c.name">{{ c.name }}</option>
+                }
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Category Name *</label>
+            <input type="text" formControlName="name" list="category-presets" placeholder="Type or click a category below..." />
+            <datalist id="category-presets">
+              @for (preset of activePresetCategories; track preset.name) {
+                <option [value]="preset.name"></option>
+              }
+            </datalist>
+
+            <!-- Quick Clickable Category Chips Related to Selected Parent -->
+            @if (activePresetCategories.length > 0) {
+              <div class="preset-chips-container">
+                <span class="preset-label">⚡ Related Suggestions (Click to fill):</span>
+                <div class="chips-scroll">
+                  @for (preset of activePresetCategories; track preset.name) {
+                    <button type="button" class="preset-chip" (click)="selectPresetName(preset.name)">
+                      <span>{{ preset.icon }}</span> {{ preset.name }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Category Type *</label>
+            <select formControlName="categoryType">
+              @for (type of categoryTypes; track type.value) {
+                <option [value]="type.value">{{ type.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea formControlName="description" rows="3" placeholder="Category details..."></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="categoryForm.invalid">
+              {{ editingCategory ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

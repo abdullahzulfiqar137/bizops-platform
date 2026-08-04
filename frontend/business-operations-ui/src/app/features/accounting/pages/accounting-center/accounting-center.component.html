@@ -1,0 +1,266 @@
+<main class="accounting-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">DOUBLE-ENTRY GENERAL LEDGER</span>
+      <h1 class="page-title">Accounting Center & Chart of Accounts</h1>
+      <p class="page-subtitle">Manage double-entry journal postings, general ledgers, trial balance, and financial position.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-sync" [disabled]="syncing" (click)="syncEntries()">
+        {{ syncing ? 'Syncing...' : '🔄 Sync Automatic Entries' }}
+      </button>
+      <button type="button" class="primary" (click)="openJournal()">+ Post Manual Journal</button>
+    </div>
+  </header>
+
+  @if (loading) { 
+    <div class="data-state"><span class="state-spinner"></span><strong>Preparing accounting ledgers...</strong></div> 
+  }
+  @else if (error) { 
+    <div class="data-state error-state">
+      <strong>Accounting data could not be loaded</strong>
+      <small>{{ error }}</small>
+      <button (click)="load()">Try again</button>
+    </div> 
+  }
+  @else {
+    <section class="accounting-metrics">
+      <article>
+        <small>Total Assets</small>
+        <strong>{{ balance?.assets ?? 0 | businessCurrency }}</strong>
+      </article>
+      <article>
+        <small>Total Liabilities</small>
+        <strong>{{ balance?.liabilities ?? 0 | businessCurrency }}</strong>
+      </article>
+      <article>
+        <small>Equity + Earnings</small>
+        <strong>{{ (balance?.equity ?? 0) + (balance?.retainedEarnings ?? 0) | businessCurrency }}</strong>
+      </article>
+      <article [class.good]="trial?.isBalanced">
+        <small>General Ledger Status</small>
+        <strong>{{ trial?.isBalanced ? 'Balanced ✅' : 'Review Needed ⚠️' }}</strong>
+      </article>
+    </section>
+
+    <nav class="accounting-tabs">
+      <button [class.active]="tab==='trial'" (click)="tab='trial'">Trial Balance</button>
+      <button [class.active]="tab==='journals'" (click)="tab='journals'">Journal Postings</button>
+      <button [class.active]="tab==='accounts'" (click)="tab='accounts'">Chart of Accounts</button>
+      <button [class.active]="tab==='position'" (click)="tab='position'">Balance Sheet</button>
+    </nav>
+
+    <section class="accounting-card">
+      @if (tab === 'trial' && trial) {
+        <div class="section-head">
+          <div>
+            <h2>Trial Balance Statement</h2>
+            <p>Movement as of {{ trial.asOfUtc | date:'mediumDate' }}</p>
+          </div>
+          <span [class.ok]="trial.isBalanced">Debits {{ trial.totalDebits | businessCurrency }} · Credits {{ trial.totalCredits | businessCurrency }}</span>
+        </div>
+        <div class="table-responsive">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Account Name</th>
+                <th>Type</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Net Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of trial.lines; track line.accountCode) {
+                <tr>
+                  <td><code>{{ line.accountCode }}</code></td>
+                  <td><strong>{{ line.accountName }}</strong></td>
+                  <td>{{ accountType(line.accountType) }}</td>
+                  <td>{{ line.debit | businessCurrency }}</td>
+                  <td>{{ line.credit | businessCurrency }}</td>
+                  <td><strong>{{ line.balance | businessCurrency }}</strong></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (tab === 'journals') {
+        <div class="section-head">
+          <div>
+            <h2>Journal Entries Ledger</h2>
+            <p>Audit trail of automatic sales/purchase postings & manual journals.</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Entry #</th>
+                <th>Description</th>
+                <th>Source Reference</th>
+                <th>Total Posting</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of journals; track item.id) {
+                <tr>
+                  <td>{{ item.entryDateUtc | date:'mediumDate' }}</td>
+                  <td><code>{{ item.entryNumber }}</code></td>
+                  <td>{{ item.description }}</td>
+                  <td><span class="source">{{ item.referenceType }}</span></td>
+                  <td><strong>{{ item.total | businessCurrency }}</strong></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (tab === 'accounts') {
+        <div class="section-head">
+          <div>
+            <h2>Chart of Accounts</h2>
+            <p>Click any master account to inspect its detailed general ledger ledger lines.</p>
+          </div>
+        </div>
+        <div class="account-grid">
+          @for (account of accounts; track account.id) {
+            <button (click)="viewLedger(account)" [class.selected]="selectedAccount?.id === account.id">
+              <code>{{ account.code }}</code>
+              <span>
+                <strong>{{ account.name }}</strong>
+                <small>{{ accountType(account.type) }}{{ account.isSystem ? ' · System Account' : '' }}</small>
+              </span>
+              <i>→</i>
+            </button>
+          }
+        </div>
+
+        @if (selectedAccount) {
+          <div class="ledger">
+            <h3>Ledger Activity: {{ selectedAccount.code }} · {{ selectedAccount.name }}</h3>
+            <div class="table-responsive">
+              <table class="enterprise-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Entry #</th>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Running Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of ledger; track $index) {
+                    <tr>
+                      <td>{{ line.dateUtc | date:'shortDate' }}</td>
+                      <td><code>{{ line.entryNumber }}</code></td>
+                      <td>{{ line.description }}</td>
+                      <td>{{ line.debit | businessCurrency }}</td>
+                      <td>{{ line.credit | businessCurrency }}</td>
+                      <td><strong>{{ line.balance | businessCurrency }}</strong></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="6" class="empty">No journal activity posted to this account yet.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
+
+      @if (tab === 'position' && balance) {
+        <div class="section-head">
+          <div>
+            <h2>Balance Sheet Statement</h2>
+            <p>Financial position as of {{ balance.asOfUtc | date:'mediumDate' }}</p>
+          </div>
+          <span [class.ok]="balance.isBalanced">{{ balance.isBalanced ? 'Accounting Equation Balanced ✅' : 'Review Required ⚠️' }}</span>
+        </div>
+        <div class="balance-layout">
+          <div>
+            <h3>Total Assets</h3>
+            <strong>{{ balance.assets | businessCurrency }}</strong>
+          </div>
+          <div>
+            <h3>Total Liabilities</h3>
+            <strong>{{ balance.liabilities | businessCurrency }}</strong>
+          </div>
+          <div>
+            <h3>Owner Equity</h3>
+            <strong>{{ balance.equity | businessCurrency }}</strong>
+          </div>
+          <div>
+            <h3>Retained Earnings</h3>
+            <strong>{{ balance.retainedEarnings | businessCurrency }}</strong>
+          </div>
+          <div class="total">
+            <h3>Total Liabilities + Equity</h3>
+            <strong>{{ balance.liabilitiesAndEquity | businessCurrency }}</strong>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  @if (showJournal) {
+    <div class="journal-overlay">
+      <section class="journal-dialog">
+        <header>
+          <div>
+            <span>MANUAL DOUBLE-ENTRY</span>
+            <h2>Post Journal Entry</h2>
+          </div>
+          <button (click)="showJournal=false">×</button>
+        </header>
+        <div class="journal-body">
+          <label>
+            Description *
+            <input [(ngModel)]="journalDescription" placeholder="Purpose of this manual accounting adjustment..." />
+          </label>
+          
+          <div class="journal-lines">
+            <div class="line heading">
+              <span>Account</span>
+              <span>Debit Amount</span>
+              <span>Credit Amount</span>
+              <span></span>
+            </div>
+            @for (line of journalLines; track $index; let i = $index) {
+              <div class="line">
+                <select [(ngModel)]="line.accountId">
+                  <option value="">Choose account...</option>
+                  @for (account of accounts; track account.id) {
+                    <option [value]="account.id">{{ account.code }} · {{ account.name }}</option>
+                  }
+                </select>
+                <input type="number" min="0" step=".01" [(ngModel)]="line.debit" placeholder="0.00" />
+                <input type="number" min="0" step=".01" [(ngModel)]="line.credit" placeholder="0.00" />
+                <button (click)="removeLine(i)" [disabled]="journalLines.length <= 2">×</button>
+              </div>
+            }
+          </div>
+          <button class="add-line" (click)="addLine()">+ Add Journal Line</button>
+
+          <div class="journal-total">
+            <span>Debits: <strong>{{ journalDebits | businessCurrency }}</strong></span>
+            <span>Credits: <strong>{{ journalCredits | businessCurrency }}</strong></span>
+            <b [class.ok]="journalBalanced">{{ journalBalanced ? 'Balanced ✅' : 'Difference: ' + (journalDebits - journalCredits) }}</b>
+          </div>
+        </div>
+        <footer>
+          <button class="cancel" (click)="showJournal=false">Cancel</button>
+          <button class="primary" [disabled]="!journalBalanced || !journalDescription || savingJournal" (click)="saveJournal()">
+            {{ savingJournal ? 'Posting...' : 'Post Journal Entry' }}
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+</main>

@@ -1,0 +1,509 @@
+<div class="profile-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="breadcrumb">
+        <span>Administration</span>
+        <span class="sep">/</span>
+        <span class="active">Business Settings</span>
+      </div>
+      <h1 class="page-title">
+        Enterprise Profile & Financial Engine
+      </h1>
+      <p class="page-subtitle">Configure company identity, official tax registration, currency standards, and automated invoice sequencing</p>
+    </div>
+    <div class="header-actions">
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Verified Enterprise Workspace
+      </div>
+    </div>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success animate-fade-in">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>{{ successMessage }}</span>
+      <button type="button" class="close-btn" (click)="successMessage = ''">✕</button>
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-danger animate-fade-in">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{{ errorMessage }}</span>
+      <button type="button" class="close-btn" (click)="errorMessage = ''">✕</button>
+    </div>
+  }
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+    <!-- Top Graphic Hero Banner -->
+    <div class="hero-banner">
+      <div class="hero-bg-accent"></div>
+      <div class="hero-content">
+        <div class="company-brand-group">
+          <div class="brand-avatar-container">
+            @if (profileForm.value.logoUrl) {
+              <img [src]="profileForm.value.logoUrl" alt="Brand Logo" class="brand-logo-img" />
+            } @else {
+              <div class="brand-avatar">
+                <svg class="building-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+                <span class="initials-sub">{{ getInitials(profileForm.value.companyName || 'BizOps') }}</span>
+              </div>
+            }
+            <label class="avatar-edit-badge" title="Upload Brand Logo">
+              <input type="file" (change)="onLogoUpload($event)" accept="image/*" style="display: none" />
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </label>
+          </div>
+
+          <div class="brand-info">
+            <div class="title-row">
+              <h2>{{ profileForm.value.companyName || 'Business Name' }}</h2>
+              <span class="verification-pill">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Verified Business Workspace
+              </span>
+            </div>
+            <p class="legal-subtext">{{ profileForm.value.legalName || 'Legal Registration Pending' }}</p>
+            <div class="health-meter">
+              <span class="meter-text">Setup Completion: <strong>100%</strong></span>
+              <div class="meter-bar"><div class="meter-fill" style="width: 100%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-quick-stats">
+          <div class="stat-card">
+            <span class="stat-icon">🌐</span>
+            <div class="stat-data">
+              <span class="stat-label">Country</span>
+              <strong class="stat-value flex-align">
+                @if (selectedCountry?.flagUrl) {
+                  <img [src]="selectedCountry?.flagUrl" [alt]="selectedCountry?.name" class="country-flag-img-sm" />
+                }
+                <span>{{ selectedCountry ? selectedCountry.name : (profileForm.value.country || 'Global') }}</span>
+              </strong>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-icon">💵</span>
+            <div class="stat-data">
+              <span class="stat-label">Currency</span>
+              <strong class="stat-value">{{ profileForm.value.currencyCode }} ({{ profileForm.value.currencySymbol }})</strong>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-icon">🏛️</span>
+            <div class="stat-data">
+              <span class="stat-label">Tax Standard</span>
+              <strong class="stat-value">{{ profileForm.value.taxRate }}% VAT Rate</strong>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-icon">📑</span>
+            <div class="stat-data">
+              <span class="stat-label">Next Invoice</span>
+              <strong class="stat-value code-accent">{{ profileForm.value.invoicePrefix }}-{{ profileForm.value.nextInvoiceNumber }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segmented Tab Bar -->
+    <div class="segmented-tabs">
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>All Sections</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'identity'" (click)="activeTab = 'identity'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M10 6h4"/></svg>
+        <span>Company Identity</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'location'" (click)="activeTab = 'location'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Location & Contact</span>
+      </button>
+      <button type="button" class="tab-btn" [class.active]="activeTab === 'financial'" (click)="activeTab = 'financial'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Financial & Invoicing</span>
+      </button>
+    </div>
+
+    <div class="form-sections">
+      <!-- Section 1: Company Identity -->
+      @if (activeTab === 'all' || activeTab === 'identity') {
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="header-icon bg-indigo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+            </div>
+            <div>
+              <h3 class="card-title">Company Identity</h3>
+              <p class="card-desc">Official legal registration, company name, and tax identification</p>
+            </div>
+          </div>
+
+          <div class="form-grid grid-3">
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-indigo-sub">🏢</span>
+                <span>Company Name</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 21V11m4 10V11m4 10V11m4 10V11M3 7l9-4 9 4"/></svg>
+                <input type="text" formControlName="companyName" placeholder="Enter business trading name..." />
+              </div>
+              <small class="field-guide">Your brand name printed on top of all invoices & reports</small>
+            </div>
+
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-purple-sub">📜</span>
+                <span>Legal Registered Name</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <input type="text" formControlName="legalName" placeholder="Official registered legal entity name..." />
+              </div>
+              <small class="field-guide">Official registered entity for legal contracts & tax filings</small>
+            </div>
+
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-amber-sub">🏛️</span>
+                <span>Tax Identification Number (TIN / VAT)</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                <input type="text" formControlName="taxNumber" placeholder="e.g. US-987654321" />
+              </div>
+              <small class="field-guide">Official VAT or Tax ID printed on customer receipts</small>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Section 2: Contact & Address -->
+      @if (activeTab === 'all' || activeTab === 'location') {
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="header-icon bg-emerald">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <h3 class="card-title">Contact & Headquarters Location</h3>
+              <p class="card-desc">Primary headquarters location printed on customer invoices and purchase orders</p>
+            </div>
+          </div>
+
+          <div class="form-grid grid-3">
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-blue-sub">📧</span>
+                <span>Email Address</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <input type="email" formControlName="email" placeholder="billing@company.com" />
+              </div>
+            </div>
+
+            <!-- Phone Number with Flag Image Dial Code Dropdown -->
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-emerald-sub">📞</span>
+                <span>Phone Number</span>
+                <span class="required">*</span>
+              </label>
+              <div class="phone-input-group">
+                <div class="custom-dropdown-container dial-code-dropdown">
+                  <button type="button" class="custom-dropdown-trigger dial-trigger" (click)="togglePhoneDropdown($event)">
+                    <div class="trigger-label">
+                      @if (getSelectedDialCountry()?.flagUrl) {
+                        <img [src]="getSelectedDialCountry()?.flagUrl" [alt]="getSelectedDialCountry()?.name" class="country-flag-img" />
+                      }
+                      <span class="dial-text">{{ phoneDialCode }}</span>
+                    </div>
+                    <svg class="chevron-icon" [class.open]="phoneDropdownOpen" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+
+                  @if (phoneDropdownOpen) {
+                    <div class="custom-dropdown-panel dial-panel animate-fade-in" (click)="$event.stopPropagation()">
+                      <div class="panel-list">
+                        @for (c of countries; track c.code) {
+                          <button type="button" class="panel-item" [class.selected]="c.dialCode === phoneDialCode" (click)="selectPhoneDialCode(c)">
+                            <img [src]="c.flagUrl" [alt]="c.name" class="country-flag-img" />
+                            <span class="item-name">{{ c.name }}</span>
+                            <strong class="item-dial">{{ c.dialCode }}</strong>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <input type="text" formControlName="phoneNumber" placeholder="300 1234567" />
+              </div>
+              <small class="field-hint">Active Dial Prefix: <strong>{{ phoneDialCode }}</strong></small>
+            </div>
+
+            <!-- Country Dropdown with Real Flag Image Icons -->
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-rose-sub">🌍</span>
+                <span>Country</span>
+                <span class="required">*</span>
+              </label>
+
+              <div class="custom-dropdown-container">
+                <button type="button" class="custom-dropdown-trigger" (click)="toggleCountryDropdown($event)">
+                  <div class="trigger-label">
+                    @if (selectedCountry?.flagUrl) {
+                      <img [src]="selectedCountry?.flagUrl" [alt]="selectedCountry?.name" class="country-flag-img" />
+                    }
+                    <span class="country-text">{{ selectedCountry?.name || profileForm.value.country || 'Select Country' }}</span>
+                  </div>
+                  <svg class="chevron-icon" [class.open]="countryDropdownOpen" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                @if (countryDropdownOpen) {
+                  <div class="custom-dropdown-panel animate-fade-in" (click)="$event.stopPropagation()">
+                    <div class="panel-search">
+                      <input type="text" [(ngModel)]="countrySearchQuery" placeholder="Search country..." [ngModelOptions]="{standalone: true}" (click)="$event.stopPropagation()" />
+                    </div>
+                    <div class="panel-list">
+                      @for (c of getFilteredCountries(); track c.code) {
+                        <button type="button" class="panel-item" [class.selected]="c.name === profileForm.value.country" (click)="selectCountryItem(c)">
+                          <img [src]="c.flagUrl" [alt]="c.name" class="country-flag-img" />
+                          <span class="item-name">{{ c.name }}</span>
+                          @if (c.name === profileForm.value.country) {
+                            <span class="check-mark">✓</span>
+                          }
+                        </button>
+                      } @empty {
+                        <div class="panel-empty">No countries match "{{ countrySearchQuery }}"</div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="form-group span-full">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-sky-sub">📍</span>
+                <span>Street Address</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <input type="text" formControlName="address" placeholder="100 Enterprise Way, Suite 400" />
+              </div>
+            </div>
+
+            <!-- City Input with Dynamic Datalist -->
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-violet-sub">🌆</span>
+                <span>City</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <input type="text" formControlName="city" list="cityOptions" placeholder="Type or select city..." />
+                <datalist id="cityOptions">
+                  @for (city of availableCities; track city) {
+                    <option [value]="city"></option>
+                  }
+                </datalist>
+              </div>
+              @if (availableCities.length > 0) {
+                <small class="field-hint">Loaded {{ availableCities.length }} popular cities for {{ profileForm.value.country }}</small>
+              }
+            </div>
+
+            <!-- State / Province with Dynamic Datalist -->
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-orange-sub">🗺️</span>
+                <span>State / Province</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <input type="text" formControlName="state" list="stateOptions" placeholder="Type or select state..." />
+                <datalist id="stateOptions">
+                  @for (st of availableStates; track st) {
+                    <option [value]="st"></option>
+                  }
+                </datalist>
+              </div>
+            </div>
+
+            <!-- Postal Code -->
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-teal-sub">📮</span>
+                <span>Postal Code</span>
+                <span class="required">*</span>
+              </label>
+              <input type="text" formControlName="postalCode" [placeholder]="postalCodeHint" />
+              <small class="field-hint">{{ postalCodeHint }}</small>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Section 3: Financial & Invoice Formatting -->
+      @if (activeTab === 'all' || activeTab === 'financial') {
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="header-icon bg-amber">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <h3 class="card-title">Financial & Invoice Engine</h3>
+              <p class="card-desc">Set system currency standards, default tax rate, and invoice numbering sequence</p>
+            </div>
+          </div>
+
+          <div class="form-grid grid-3">
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-emerald-sub">💵</span>
+                <span>Business Currency (ISO 4217)</span>
+              </label>
+              <select formControlName="currencyCode" class="currency-select">
+                @for (currency of currencies; track currency.code) {
+                  <option [value]="currency.code">{{ currency.code }} - {{ currency.name }} ({{ currency.symbol }})</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-indigo-sub">🔣</span>
+                <span>Currency Symbol</span>
+              </label>
+              <div class="readonly-badge-input">
+                <span class="symbol-pill">{{ profileForm.value.currencySymbol }}</span>
+                <input type="text" formControlName="currencySymbol" readonly />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-amber-sub">📊</span>
+                <span>Default Tax Rate (%)</span>
+              </label>
+              <div class="input-suffix-wrapper">
+                <input type="number" step="0.01" formControlName="taxRate" />
+                <span class="suffix">%</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-purple-sub">🧾</span>
+                <span>Invoice Prefix</span>
+              </label>
+              <input type="text" formControlName="invoicePrefix" placeholder="INV" />
+            </div>
+
+            <div class="form-group">
+              <label class="label-with-icon">
+                <span class="label-icon-badge bg-sky-sub">🔢</span>
+                <span>Next Invoice Sequence Number</span>
+              </label>
+              <input type="number" formControlName="nextInvoiceNumber" />
+            </div>
+          </div>
+
+          <!-- Graphic Live Specimen Invoice Card -->
+          <div class="graphic-specimen-container">
+            <div class="specimen-header-bar">
+              <div class="specimen-title">
+                <span class="pulse-icon"></span>
+                LIVE INVOICE SPECIMEN PREVIEW
+              </div>
+              <span class="specimen-tag">AUTOMATED HEADER</span>
+            </div>
+
+            <div class="specimen-card-mock">
+              <div class="mock-top">
+                <div class="mock-brand">
+                  <div class="mock-logo">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M10 6h4"/></svg>
+                  </div>
+                  <div>
+                    <strong class="mock-name">{{ profileForm.value.companyName || 'Business Name' }}</strong>
+                    <small class="mock-address">{{ profileForm.value.address || 'Street Address' }}, {{ profileForm.value.city || 'City' }}, {{ selectedCountry ? selectedCountry.name : profileForm.value.country }}</small>
+                  </div>
+                </div>
+
+                <div class="mock-inv-meta">
+                  <div class="inv-number-pill">INVOICE #{{ profileForm.value.invoicePrefix }}-{{ profileForm.value.nextInvoiceNumber }}</div>
+                  <small class="mock-date">Date: {{ todayDate }}</small>
+                </div>
+              </div>
+
+              <div class="mock-table">
+                <div class="mock-tr mock-th">
+                  <span>Description</span>
+                  <span>Qty</span>
+                  <span class="text-right">Amount</span>
+                </div>
+                <div class="mock-tr">
+                  <span>Enterprise Operations Subscription & Service</span>
+                  <span>1</span>
+                  <span class="text-right">{{ profileForm.value.currencySymbol }}1,250.00</span>
+                </div>
+              </div>
+
+              <div class="mock-summary">
+                <div class="summary-line">
+                  <span>Subtotal:</span>
+                  <strong>{{ profileForm.value.currencySymbol }}1,250.00</strong>
+                </div>
+                <div class="summary-line">
+                  <span>Tax ({{ profileForm.value.taxRate }}% VAT):</span>
+                  <strong class="text-green">+{{ profileForm.value.currencySymbol }}{{ getCalculatedTaxAmount() }}</strong>
+                </div>
+                <div class="summary-line total-line">
+                  <span>Grand Total:</span>
+                  <strong class="grand-amount">{{ profileForm.value.currencySymbol }}{{ getCalculatedGrandTotal() }} {{ profileForm.value.currencyCode }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Sticky Save Action Bar -->
+    <div class="form-actions-bar">
+      <div class="actions-left">
+        <span class="save-hint">Changes will take effect system-wide upon saving</span>
+      </div>
+      <div class="actions-right">
+        <button type="button" class="btn-cancel" (click)="loadProfile()" [disabled]="loading">
+          Revert Changes
+        </button>
+        <button type="submit" class="btn-save-profile" [disabled]="loading || profileForm.invalid">
+          @if (loading) {
+            <span class="spinner"></span>
+            <span>Saving Profile...</span>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save Profile Settings</span>
+          }
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

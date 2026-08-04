@@ -1,0 +1,134 @@
+<div class="split-auth-container">
+  <!-- Left Panel: Mouse Tracking Robot & Dynamic Assistant Speech -->
+  <div class="hero-visual-panel">
+    <div class="ambient-glow-orb orb-1"></div>
+    <div class="ambient-glow-orb orb-2"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="hero-content">
+      <!-- Dynamic Robot Speech Bubble -->
+      <div class="robot-speech-bubble" [class.shake]="robotMood === 'sad'">
+        <span class="speech-badge" [class.badge-sad]="robotMood === 'sad'">
+          @if (robotMood === 'sad') { 🥺 Login Alert }
+          @else if (robotMood === 'thinking') { ⚙️ Authenticating... }
+          @else { 🤖 AI Assistant Guide }
+        </span>
+        <p class="speech-text">{{ speechMessage }}</p>
+        @if (robotMood === 'sad') {
+          <a routerLink="/auth/register" class="btn-bubble-register">🚀 Register Account Now</a>
+        }
+      </div>
+
+      <!-- Interactive 3D Head + Eyes Tracking Robot Mascot -->
+      <div class="robot-mascot" #robotContainer>
+        <div class="robot-head" [class.head-sad]="robotMood === 'sad'" [style.transform]="headTransform">
+          <div class="robot-antenna">
+            <div class="antenna-ball" [class.antenna-red]="robotMood === 'sad'"></div>
+          </div>
+          <div class="robot-ears left"></div>
+          <div class="robot-ears right"></div>
+          <div class="robot-face">
+            <div class="robot-eye left">
+              <div class="pupil" [style.transform]="pupilTransform"></div>
+            </div>
+            <div class="robot-eye right">
+              <div class="pupil" [style.transform]="pupilTransform"></div>
+            </div>
+          </div>
+          <div class="robot-mouth" [class.mouth-sad]="robotMood === 'sad'" [class.mouth-o]="robotMood === 'thinking'"></div>
+        </div>
+        <div class="robot-body">
+          <div class="robot-chest">
+            {{ robotMood === 'sad' ? '⚠️ ALERT' : '⚡ BIZOPS' }}
+          </div>
+          <div class="robot-arm left"></div>
+          <div class="robot-arm right wave">👋</div>
+        </div>
+      </div>
+
+      <h2 class="guide-title">Enterprise System Login</h2>
+      <ul class="guide-instructions">
+        <li><span class="bullet">✓</span> Enter your registered Username or Email address.</li>
+        <li><span class="bullet">✓</span> Provide your secure account Password.</li>
+        <li><span class="bullet">✓</span> Click 'Sign In' to access real-time ERP tools & AI Insights.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Right Panel: Clean Login Form -->
+  <div class="auth-form-panel">
+    <div class="form-wrapper">
+      <div class="form-header">
+        <div class="mobile-logo">
+          <span class="logo-icon">🤖</span>
+          <span>AI BizOps System</span>
+        </div>
+        <h2>Sign In to Account</h2>
+        <p>Welcome back! Please enter your details below</p>
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert alert-danger">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="form-group">
+          <label for="usernameOrEmail">Username or Email Address *</label>
+          <div class="input-box" [class.invalid]="isInvalid('usernameOrEmail')">
+            <span class="input-icon">👤</span>
+            <input
+              id="usernameOrEmail"
+              type="text"
+              formControlName="usernameOrEmail"
+              placeholder="Enter your username or email"
+              autocomplete="username"
+              (focus)="onInputFocus()"
+            />
+          </div>
+          @if (isInvalid('usernameOrEmail')) {
+            <span class="field-error">Username or Email is required</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password *</label>
+          <div class="input-box" [class.invalid]="isInvalid('password')">
+            <span class="input-icon">🔒</span>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              (focus)="onInputFocus()"
+            />
+            <button type="button" (click)="showPassword = !showPassword" class="btn-toggle-eye" tabindex="-1" title="Toggle password visibility">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+          @if (isInvalid('password')) {
+            <span class="field-error">Password is required</span>
+          }
+        </div>
+        <div class="password-help"><a routerLink="/auth/forgot-password">Forgot password?</a></div>
+
+        <button type="submit" class="btn-submit-glow" [disabled]="loading">
+          @if (loading) {
+            <span class="spinner"></span>
+            <span>Authenticating...</span>
+          } @else {
+            <span>Sign In to Dashboard ➔</span>
+          }
+        </button>
+      </form>
+
+      <div class="form-footer">
+        <span>Don't have an account?</span>
+        <a routerLink="/auth/register" class="link-register">Register new staff account</a>
+      </div>
+    </div>
+  </div>
+</div>

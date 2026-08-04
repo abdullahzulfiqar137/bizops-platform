@@ -1,0 +1,43 @@
+<div class="import-page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">CSV Import Center</h1>
+      <p class="page-subtitle">Validated bulk onboarding with downloadable column templates.</p>
+    </div>
+  </header>
+
+  <div class="info">
+    <strong>Import requirements</strong>
+    <span>UTF-8 CSV · Maximum 5 MB · Maximum 10,000 rows · First row must contain template headers</span>
+  </div>
+
+  <div class="import-grid">
+    @for (type of types; track type.key) {
+      <section class="enterprise-card">
+        <div class="card-head">
+          <div class="icon">{{type.code}}</div>
+          <div>
+            <h2>{{type.label}}</h2>
+            <p>{{type.copy}}</p>
+          </div>
+        </div>
+
+        <a class="template" [href]="base+'/templates/'+type.key">Download CSV template</a>
+
+        <label class="upload">
+          <input type="file" accept=".csv,text/csv" (change)="select(type.key,$event)">
+          <strong>{{files[type.key]?.name||'Select a CSV file'}}</strong>
+          <span>{{files[type.key]?(files[type.key]!.size/1024|number:'1.0-0')+' KB':'Click to browse from your computer'}}</span>
+        </label>
+
+        <button class="btn-primary" (click)="upload(type.key)" [disabled]="!files[type.key]||busy===type.key">
+          {{busy===type.key?'Validating and importing...':'Start import'}}
+        </button>
+
+        @if (results[type.key]) {
+          <div class="result" [class.error]="errors[type.key]">{{results[type.key]}}</div>
+        }
+      </section>
+    }
+  </div>
+</div>

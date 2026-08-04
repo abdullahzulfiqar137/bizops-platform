@@ -1,0 +1,33 @@
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  min-height: 28px;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.home-icon {
+  color: #64748b;
+  flex: 0 0 auto;
+}
+.crumb-link {
+  color: #64748b;
+  text-decoration: none;
+  text-transform: capitalize;
+  padding: 4px 2px;
+  border-radius: 4px;
+  transition: color .15s ease;
+}
+.crumb-link:hover {
+  color: #2563eb;
+}
+.crumb-link.active {
+  color: #0f172a;
+  font-weight: 700;
+  pointer-events: none;
+}
+.separator {
+  color: #cbd5e1;
+  flex: 0 0 auto;
+}

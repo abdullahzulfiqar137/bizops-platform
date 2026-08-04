@@ -1,0 +1,17 @@
+.page { display: flex; flex-direction: column; gap: 14px; max-width: 940px; }
+.tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
+.tabs button { border: 0; background: transparent; padding: 10px 14px; color: #64748b; font-weight: 700; cursor: pointer; }
+.tabs button.active { color: #2563eb; border-bottom: 2px solid #2563eb; }
+.tabs span { background: #e2e8f0; border-radius: 10px; padding: 1px 6px; font-size: .68rem; }
+.list { padding: 0; overflow: hidden; }
+.notice { width: 100%; display: flex; align-items: flex-start; gap: 12px; text-align: left; background: #fff; border: 0; border-bottom: 1px solid #e2e8f0; padding: 15px 18px; cursor: pointer; }
+.notice:last-child { border-bottom: 0; }
+.notice.unread { background: #f8fbff; }
+.dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: #cbd5e1; margin-top: 5px; }
+.unread .dot { background: #2563eb; }
+.copy { display: flex; flex: 1; flex-direction: column; gap: 5px; }
+.notice-head { display: flex; justify-content: space-between; gap: 12px; }
+.notice small, .notice time, .empty { color: #64748b; font-size: .75rem; }
+.notice time { white-space: nowrap; }
+.empty { display: flex; flex-direction: column; gap: 5px; text-align: center; padding: 60px; }
+.empty strong { color: #334155; }

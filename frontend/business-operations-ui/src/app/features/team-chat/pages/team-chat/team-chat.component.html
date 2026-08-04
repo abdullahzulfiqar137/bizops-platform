@@ -1,0 +1,128 @@
+<div class="team-chat-page">
+  <!-- Main Chat Container Card -->
+  <div class="chat-container-card">
+    <!-- Team Members Sidebar -->
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        <div>
+          <span class="eyebrow">WORKSPACE COLLABORATION</span>
+          <h2 class="sidebar-title">Team Chat & Messaging</h2>
+        </div>
+      </div>
+
+      <div class="chat-members-list">
+        <div class="section-label">TEAM MEMBERS ({{ members.length }})</div>
+        @for (m of members; track m.id) {
+          <button
+            type="button"
+            class="member-btn"
+            [class.active]="activeMemberId === m.id"
+            (click)="selectMember(m.id)"
+          >
+            <div class="avatar-wrap">
+              <span class="user-avatar" [style.background]="m.avatarColor">
+                {{ m.name.charAt(0) }}
+              </span>
+              <span class="status-dot" [class]="m.status"></span>
+            </div>
+            <div class="member-info">
+              <div class="name-row">
+                <span class="member-name">{{ m.name }}</span>
+              </div>
+              <span class="member-sub">{{ m.role }}</span>
+            </div>
+            <div class="member-meta">
+              @if (m.roleBadge) {
+                <span class="role-pill">{{ m.roleBadge }}</span>
+              }
+              <span class="presence" [class]="m.status">{{ m.status | titlecase }}</span>
+            </div>
+          </button>
+        } @empty {
+          <div class="empty-sidebar-state">
+            <strong>No employees yet</strong>
+            <p>Add an employee from the Employees page. They will appear here automatically.</p>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <!-- Main Chat Window Area -->
+    <main class="chat-main">
+      @if (getActiveMember(); as activeMember) {
+        <!-- Chat Header Bar -->
+        <header class="chat-header">
+          <div class="active-title-info">
+            <span class="user-avatar lg" [style.background]="activeMember.avatarColor">
+              {{ activeMember.name.charAt(0) }}
+            </span>
+            <div>
+              <div class="active-name-row">
+                <h3>{{ activeMember.name }}</h3>
+                <span class="role-pill lg">{{ activeMember.roleBadge }}</span>
+              </div>
+              <p class="status-text">
+                <span class="status-dot inline" [class]="activeMember.status"></span>
+                {{ activeMember.role }} • {{ activeMember.status | titlecase }}
+              </p>
+            </div>
+          </div>
+          <div class="chat-header-actions">
+            <span class="live-pulse-badge">● SignalR Active</span>
+          </div>
+        </header>
+
+        <!-- Messages Feed -->
+        <div class="messages-feed">
+          @for (msg of currentMessages; track msg.id) {
+            <div class="message-row" [class.is-self]="msg.isSelf">
+              <span class="user-avatar" [style.background]="msg.avatarColor">
+                {{ msg.senderName.charAt(0) }}
+              </span>
+              <div class="message-bubble-wrap">
+                <div class="message-meta">
+                  <strong class="sender-name">{{ msg.senderName }}</strong>
+                  <span class="role-tag">{{ msg.senderRole }}</span>
+                  <span class="timestamp">{{ msg.timestamp }}</span>
+                </div>
+                <div class="message-bubble">
+                  <p>{{ msg.content }}</p>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-chat-state">
+              <span>💬 No messages yet with {{ activeMember.name }}. Send a direct message!</span>
+            </div>
+          }
+        </div>
+
+        <!-- Chat Input Bar -->
+        <footer class="chat-input-bar">
+          <div class="input-wrapper">
+            <input
+              type="text"
+              [(ngModel)]="newMessageText"
+              (keyup.enter)="sendMessage()"
+              [placeholder]="'Message ' + activeMember.name + '...'"
+              class="chat-input"
+            />
+            <div class="input-actions">
+              <button type="button" class="btn-icon" (click)="addQuickEmoji('👍')" title="Add Thumbs Up">👍</button>
+              <button type="button" class="btn-icon" (click)="addQuickEmoji('🚀')" title="Add Rocket">🚀</button>
+              <button type="button" class="btn-icon" (click)="addQuickEmoji('❤️')" title="Add Heart">❤️</button>
+              <button type="button" class="btn-icon" (click)="addQuickEmoji('🎉')" title="Add Celebration">🎉</button>
+              <button type="button" class="btn-send" (click)="sendMessage()">
+                Send ➔
+              </button>
+            </div>
+          </div>
+        </footer>
+      } @else {
+        <div class="empty-chat-state center">
+          <span>💬 Select a team member from the left sidebar to start chatting.</span>
+        </div>
+      }
+    </main>
+  </div>
+</div>

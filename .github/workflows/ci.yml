@@ -1,0 +1,82 @@
+name: BizOps CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bizops-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Angular validation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/business-operations-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/business-operations-ui/package-lock.json
+      - run: npm ci
+      - name: Dependency audit
+        run: npm audit --audit-level=high --omit=dev
+      - name: TypeScript check
+        run: npx tsc --project tsconfig.app.json --noEmit
+      - name: Unit tests
+        run: npm run test:ci
+      - name: Production build
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bizops-frontend
+          path: frontend/business-operations-ui/dist/business-operations-ui
+          if-no-files-found: error
+
+  backend:
+    name: .NET API validation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Validate JSON configuration
+        shell: pwsh
+        run: |
+          Get-Content BusinessOperations.API/appsettings.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content BusinessOperations.API/appsettings.Production.json -Raw | ConvertFrom-Json | Out-Null
+      - run: dotnet restore BusinessOperations.sln
+      - name: Dependency vulnerability audit
+        run: dotnet list BusinessOperations.sln package --vulnerable --include-transitive
+      - run: dotnet test BusinessOperations.sln --configuration Release --no-restore
+      - run: dotnet publish BusinessOperations.API/BusinessOperations.API.csproj --configuration Release --no-restore --output publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bizops-api
+          path: backend/publish
+          if-no-files-found: error
+
+  containers:
+    name: Container builds
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build --tag bizops-api:ci backend/BusinessOperations.API
+      - name: Build web image
+        run: docker build --tag bizops-web:ci frontend/business-operations-ui

@@ -1,0 +1,106 @@
+<div class="users-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Users & Role Management</h1>
+      <p class="page-subtitle">Manage system users, activate/deactivate accounts, and assign permissions</p>
+    </div>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="loadUsers()"
+        placeholder="Search by name, email or username..."
+        class="search-input"
+      />
+      <button (click)="loadUsers()" class="btn-filter">Search</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Full Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Assigned Roles</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.id) {
+            <tr>
+              <td>
+                <strong>{{ user.fullName }}</strong>
+              </td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <div class="roles-chips">
+                  @for (role of user.roles; track role) {
+                    <span class="chip">{{ role }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="user.isActive" [class.badge-danger]="!user.isActive">
+                  {{ user.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button (click)="toggleStatus(user)" class="btn-action" [class.btn-deactivate]="user.isActive">
+                    {{ user.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
+                  <button (click)="openRoleModal(user)" class="btn-action btn-roles">
+                    Manage Roles
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} Users)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role Assignment Modal -->
+  @if (selectedUser) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>Assign Roles to {{ selectedUser.fullName }}</h3>
+        <p>Select system roles to assign to this user account:</p>
+
+        <div class="roles-checkbox-list">
+          @for (role of availableRoles; track role.id) {
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [checked]="selectedRoles.includes(role.name)"
+                (change)="toggleRoleSelection(role.name)"
+              />
+              <span><strong>{{ role.name }}</strong> - {{ role.description }}</span>
+            </label>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button (click)="closeModal()" class="btn-cancel">Cancel</button>
+          <button (click)="saveRoles()" class="btn-save">Save Roles</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

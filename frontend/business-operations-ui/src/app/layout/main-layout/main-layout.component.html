@@ -1,0 +1,21 @@
+<div class="layout-container">
+  <!-- Mobile Backdrop -->
+  @if (sidebarOpen) {
+    <div class="sidebar-backdrop" (click)="closeMobileSidebar()"></div>
+  }
+
+  <app-sidebar [isOpen]="sidebarOpen" [collapsed]="sidebarCollapsed" (closeSidebar)="closeMobileSidebar()"></app-sidebar>
+
+  <div class="main-content">
+    <app-topbar (toggleSidebar)="handleSidebarToggle()"></app-topbar>
+
+    <main class="page-container">
+      <app-breadcrumb></app-breadcrumb>
+      <app-data-export></app-data-export>
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Floating Draggable AI Assistant Robot Button & Drawer -->
+  <app-ai-widget-drawer></app-ai-widget-drawer>
+</div>

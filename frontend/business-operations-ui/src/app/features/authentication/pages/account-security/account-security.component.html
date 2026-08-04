@@ -1,0 +1,167 @@
+<div class="security-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="breadcrumb">
+        <span>Account</span>
+        <span class="sep">/</span>
+        <span class="active">Account Security</span>
+      </div>
+      <h1 class="page-title">Identity & Account Security</h1>
+      <p class="page-subtitle">Manage multi-factor authentication, active browser sessions, and access credentials.</p>
+    </div>
+    <div class="header-actions">
+      <div class="status-badge" [class.protected]="twoFactor?.isEnabled">
+        <span class="status-dot"></span>
+        <span>{{ twoFactor?.isEnabled ? '2FA Protection Active' : '2FA Setup Recommended' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Status Hero Card -->
+  <div class="security-overview-card" [class.protected]="twoFactor?.isEnabled">
+    <div class="overview-icon" [class.protected]="twoFactor?.isEnabled">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <div class="overview-content">
+      <strong>{{ twoFactor?.isEnabled ? 'Your account has enterprise-grade protection' : 'Enhance your account protection with 2FA' }}</strong>
+      <p>{{ twoFactor?.isEnabled ? 'Two-factor authentication (TOTP) is actively safeguarding your sign-in credentials.' : 'Enable two-factor authentication to require a mobile authenticator app code during sign in.' }}</p>
+    </div>
+    <div class="overview-badge" [class.protected]="twoFactor?.isEnabled">
+      {{ twoFactor?.isEnabled ? 'Fully Protected' : 'Action Needed' }}
+    </div>
+  </div>
+
+  <div class="panels-grid">
+    <!-- Panel 1: Authenticator App (2FA) -->
+    <div class="security-card">
+      <div class="card-header">
+        <div class="header-icon bg-indigo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
+        </div>
+        <div class="header-copy">
+          <h3 class="card-title">Two-Factor Authenticator App</h3>
+          <p class="card-desc">Use Microsoft Authenticator, Google Authenticator, or 1Password</p>
+        </div>
+        <span class="status-pill" [class.on]="twoFactor?.isEnabled">
+          {{ twoFactor?.isEnabled ? 'Enabled' : 'Not Enabled' }}
+        </span>
+      </div>
+
+      @if (twoFactor && !twoFactor.isEnabled) {
+        <div class="setup-wizard">
+          <div class="wizard-step">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <strong>Open your Mobile Authenticator App</strong>
+              <p>Download and open Google Authenticator, Microsoft Authenticator, or Authy on your mobile phone.</p>
+            </div>
+          </div>
+
+          <div class="wizard-step">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <strong>Enter Secret Setup Key</strong>
+              <div class="secret-box">
+                <code class="secret-code">{{ revealKey ? twoFactor.sharedKey : maskedKey }}</code>
+                <div class="secret-actions">
+                  <button type="button" class="btn-icon" (click)="revealKey = !revealKey" [title]="revealKey ? 'Hide key' : 'Reveal key'">
+                    @if (revealKey) {
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3.5 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                    } @else {
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
+                  </button>
+                  <button type="button" class="btn-icon" (click)="copyKey()" title="Copy setup key">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  </button>
+                </div>
+              </div>
+              <small class="copy-hint" [class.success]="copied">
+                {{ copied ? '✓ Setup key copied to clipboard!' : 'Keep this key secure. Anyone with it can generate your 2FA codes.' }}
+              </small>
+            </div>
+          </div>
+
+          <div class="wizard-step">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <strong>Verify 6-Digit Code</strong>
+              <div class="verify-group">
+                <input [(ngModel)]="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" class="code-input" />
+                <button type="button" class="btn-enable-2fa" (click)="toggle2fa()" [disabled]="code.length !== 6">
+                  Enable 2FA Protection
+                </button>
+              </div>
+              @if (error) {
+                <small class="error-msg">{{ error }}</small>
+              }
+            </div>
+          </div>
+        </div>
+      } @else if (twoFactor?.isEnabled) {
+        <div class="active-2fa-box">
+          <div class="active-info">
+            <div class="check-circle">✓</div>
+            <div>
+              <strong>Two-Factor Authentication Active</strong>
+              <p>Your account is protected. You will be prompted for an authenticator code during sensitive sign-in actions.</p>
+            </div>
+          </div>
+
+          <div class="disable-group">
+            <input [(ngModel)]="code" inputmode="numeric" maxlength="6" placeholder="Enter current 6-digit code to disable..." class="code-input" />
+            <button type="button" class="btn-disable-danger" (click)="toggle2fa()" [disabled]="code.length !== 6">
+              Disable 2FA
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Panel 2: Active Authorized Devices & Sessions -->
+    <div class="security-card">
+      <div class="card-header">
+        <div class="header-icon bg-emerald">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="header-copy">
+          <h3 class="card-title">Active Authorized Sessions</h3>
+          <p class="card-desc">{{ sessions.length }} device{{ sessions.length === 1 ? '' : 's' }} currently signed in to your account</p>
+        </div>
+        <button type="button" class="btn-revoke-all" (click)="revokeAll()" [disabled]="!sessions.length">
+          Sign Out All Devices
+        </button>
+      </div>
+
+      <div class="session-list">
+        @for (session of sessions; track session.id) {
+          <div class="session-item">
+            <div class="device-avatar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+
+            <div class="session-info">
+              <div class="device-row">
+                <strong>{{ deviceName(session.device) }}</strong>
+                <span class="active-badge">Active Now</span>
+              </div>
+              <span class="meta-sub">IP: <code>{{ session.ipAddress }}</code> · Signed in {{ session.createdAtUtc | date:'medium' }}</span>
+              <small class="expiry-sub">Session expires {{ session.expiresAtUtc | date:'medium' }}</small>
+            </div>
+
+            <button type="button" class="btn-revoke-item" (click)="revoke(session.id)">
+              Sign Out
+            </button>
+          </div>
+        } @empty {
+          <div class="empty-sessions">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+            <strong>No Active Sessions</strong>
+            <span>New authorized web browser sign-ins will appear here.</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

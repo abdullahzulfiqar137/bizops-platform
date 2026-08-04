@@ -1,0 +1,190 @@
+<div class="customers-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Customers Management</h1>
+      <p class="page-subtitle">Manage customer accounts, balances, and ledger transaction history</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-create">+ Add New Customer</button>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="loadCustomers()"
+        placeholder="Search customer name, code, email, phone..."
+        class="search-input"
+      />
+      <button (click)="loadCustomers()" class="btn-filter">Filter</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Customer Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>City / Country</th>
+            <th>Current Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cust of customers; track cust.id) {
+            <tr>
+              <td><strong>{{ cust.customerCode }}</strong></td>
+              <td>{{ cust.name }}</td>
+              <td>{{ cust.email }}</td>
+              <td>{{ cust.phoneNumber }}</td>
+              <td>{{ cust.city || '-' }}, {{ cust.country || '-' }}</td>
+              <td>
+                <strong [class.text-danger]="cust.currentBalance > 0">
+                  ${{ cust.currentBalance | number:'1.2-2' }}
+                </strong>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="cust.isActive" [class.badge-danger]="!cust.isActive">
+                  {{ cust.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button (click)="openEditModal(cust)" class="btn-action">Edit</button>
+                  <button (click)="viewTransactions(cust)" class="btn-action btn-history">Ledger</button>
+                  <button (click)="deleteCustomer(cust.id)" class="btn-action btn-delete">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} Customers)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create / Edit Customer Modal -->
+  @if (showFormModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>{{ editingCustomer ? 'Edit Customer' : 'Create New Customer' }}</h3>
+
+        <form [formGroup]="customerForm" (ngSubmit)="saveCustomer()">
+          <div class="form-group">
+            <label>Customer Name *</label>
+            <input type="text" formControlName="name" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" formControlName="email" />
+            </div>
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input type="text" formControlName="phoneNumber" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" formControlName="address" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" formControlName="city" list="city-presets" placeholder="City name..." />
+              <datalist id="city-presets">
+                @for (c of cityPresets; track c) {
+                  <option [value]="c"></option>
+                }
+              </datalist>
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                @for (c of cityPresets; track c) {
+                  <button type="button" (click)="selectCityPreset(c)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 0.7rem; color: #475569; cursor: pointer;">
+                    📍 {{ c }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <input type="text" formControlName="state" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Postal Code</label>
+              <input type="text" formControlName="postalCode" />
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" formControlName="country" />
+            </div>
+          </div>
+
+          @if (!editingCustomer) {
+            <div class="form-group">
+              <label>Opening Balance ($)</label>
+              <input type="number" step="0.01" formControlName="openingBalance" />
+            </div>
+          }
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeFormModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="customerForm.invalid">
+              {{ editingCustomer ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Ledger Transactions Modal -->
+  @if (selectedCustomerForHistory) {
+    <div class="modal-overlay">
+      <div class="modal-card wide">
+        <h3>Transaction History: {{ selectedCustomerForHistory.name }}</h3>
+        <p>Ledger items for {{ selectedCustomerForHistory.customerCode }}</p>
+
+        <div class="table-responsive">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Reference</th>
+                <th>Amount</th>
+                <th>Balance After</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tx of transactions; track tx.transactionId) {
+                <tr>
+                  <td>{{ tx.transactionDateUtc | date:'short' }}</td>
+                  <td><span class="badge badge-info">{{ tx.transactionType }}</span></td>
+                  <td>{{ tx.referenceNumber }}</td>
+                  <td>${{ tx.amount | number:'1.2-2' }}</td>
+                  <td>${{ tx.balanceAfter | number:'1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-actions">
+          <button (click)="closeHistoryModal()" class="btn-cancel">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

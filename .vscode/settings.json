@@ -1,0 +1,7 @@
+{
+  "typescript.tsdk": "frontend/business-operations-ui/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "terminal.integrated.env.windows": {
+    "PATH": "${workspaceFolder}\\.vscode\\bin;${env:PATH}"
+  }
+}

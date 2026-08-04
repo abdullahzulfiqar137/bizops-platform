@@ -1,0 +1,96 @@
+<div class="audit-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">System Audit Trail Logs</h1>
+      <p class="page-subtitle">Security audit log of entity modifications, user activity, and API actions</p>
+    </div>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="entityFilter"
+        (keyup.enter)="loadAuditLogs()"
+        placeholder="Filter by Entity Name (e.g. Sale, Customer)..."
+        class="search-input"
+      />
+      <input
+        type="text"
+        [(ngModel)]="actionFilter"
+        (keyup.enter)="loadAuditLogs()"
+        placeholder="Filter by Action (Create, Update, Delete)..."
+        class="search-input"
+      />
+      <button (click)="loadAuditLogs()" class="btn-filter">Filter Audit Trail</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Timestamp (UTC)</th>
+            <th>User Name</th>
+            <th>Action</th>
+            <th>Entity Name</th>
+            <th>Entity ID</th>
+            <th>IP Address</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of auditLogs; track log.id) {
+            <tr>
+              <td>{{ log.timestampUtc | date:'medium' }}</td>
+              <td><strong>{{ log.userName || 'System' }}</strong></td>
+              <td>
+                <span class="badge" [class.badge-success]="log.action === 'Create'" [class.badge-warning]="log.action === 'Update'" [class.badge-danger]="log.action === 'Delete'">
+                  {{ log.action }}
+                </span>
+              </td>
+              <td><span class="chip">{{ log.entityName }}</span></td>
+              <td><code>{{ log.entityId }}</code></td>
+              <td>{{ log.ipAddress || '-' }}</td>
+              <td>
+                <button (click)="viewDiff(log)" class="btn-action">View Diff</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} Audit Logs)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diff Modal -->
+  @if (selectedLog) {
+    <div class="modal-overlay">
+      <div class="modal-card wide">
+        <h3>Audit Diff Details ({{ selectedLog.entityName }} #{{ selectedLog.entityId }})</h3>
+        <p>Action: {{ selectedLog.action }} by {{ selectedLog.userName }} at {{ selectedLog.timestampUtc | date:'medium' }}</p>
+
+        <div class="diff-box">
+          <div class="diff-column">
+            <h4>Old Values</h4>
+            <pre>{{ selectedLog.oldValues || 'None' }}</pre>
+          </div>
+          <div class="diff-column">
+            <h4>New Values</h4>
+            <pre>{{ selectedLog.newValues || 'None' }}</pre>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button (click)="closeDiffModal()" class="btn-cancel">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

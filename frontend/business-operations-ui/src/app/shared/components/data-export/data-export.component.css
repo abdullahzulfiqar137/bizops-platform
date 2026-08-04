@@ -1,0 +1,5 @@
+.export-bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: -2px 0 14px; }
+.export-label { color: #64748b; font-size: .78rem; font-weight: 600; }
+button { border: 1px solid #cbd5e1; background: #fff; color: #334155; padding: 7px 11px; font-size: .78rem; font-weight: 700; cursor: pointer; }
+button:hover { border-color: #2563eb; color: #1d4ed8; }
+@media (max-width: 480px) { .export-bar { justify-content: space-between; } .export-label { margin-right: auto; } }

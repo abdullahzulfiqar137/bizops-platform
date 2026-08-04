@@ -1,0 +1,242 @@
+<div class="purchases-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Purchase Orders</h1>
+      <p class="page-subtitle">Create supplier purchase orders, track payables and update stock inventory</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-create" title="Create a new procurement purchase order for inventory">
+      ➕ Create Purchase Order
+    </button>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="loadPurchases()"
+        placeholder="Search PO Number, Supplier..."
+        class="search-input"
+      />
+      <button (click)="loadPurchases()" class="btn-filter" title="Apply search filter">Filter</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>PO Number</th>
+            <th>Supplier Company</th>
+            <th>PO Date</th>
+            <th>Subtotal</th>
+            <th>Tax / Disc</th>
+            <th>Total Spend</th>
+            <th>Paid / Due</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (po of purchases; track po.id) {
+            <tr>
+              <td><strong>{{ po.purchaseOrderNumber }}</strong></td>
+              <td>{{ po.supplierCompanyName }}</td>
+              <td>{{ po.purchaseDateUtc | date:'shortDate' }}</td>
+              <td>${{ po.subTotal | number:'1.2-2' }}</td>
+              <td>${{ po.taxAmount | number:'1.2-2' }} / -${{ po.discountAmount | number:'1.2-2' }}</td>
+              <td><strong>${{ po.totalAmount | number:'1.2-2' }}</strong></td>
+              <td>
+                <span class="text-success">${{ po.paidAmount | number:'1.2-2' }}</span> /
+                <span class="text-danger">${{ po.dueAmount | number:'1.2-2' }}</span>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="po.status === 2" [class.badge-danger]="po.status === 3" [class.badge-warning]="po.status === 1">
+                  {{ po.statusDescription }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button (click)="viewDetails(po)" class="btn-action" title="View detailed purchase order items">View</button>
+                  @if (po.status !== 3) {
+                    <button (click)="cancelPurchase(po.id)" class="btn-action btn-cancel-po" title="Cancel this purchase order and revert supplier balance">Cancel</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} POs)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" title="Previous page">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" title="Next page">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create PO Modal -->
+  @if (showCreateModal) {
+    <div class="modal-overlay">
+      <div class="modal-card extra-wide">
+        <div class="modal-header">
+          <h3>New Purchase Order</h3>
+          <button (click)="closeCreateModal()" class="btn-close" title="Close Modal">✕</button>
+        </div>
+
+        <form [formGroup]="poForm" (ngSubmit)="savePurchase()">
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label>Select Supplier *</label>
+              <select formControlName="supplierId">
+                <option value="">-- Choose Supplier --</option>
+                @for (sup of suppliers; track sup.id) {
+                  <option [value]="sup.id">{{ sup.companyName }} ({{ sup.name }})</option>
+                }
+              </select>
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                @for (sup of suppliers.slice(0, 4); track sup.id) {
+                  <button type="button" (click)="setSupplierPreset(sup.id)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">
+                    🏭 {{ sup.companyName || sup.name }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Tax Rate (%)</label>
+              <input type="number" step="0.01" formControlName="taxRate" (input)="calculateTotals()" placeholder="0" />
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                @for (t of taxPresets; track t.value) {
+                  <button type="button" (click)="setTaxPreset(t.value)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">
+                    {{ t.label }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Discount Amount ($)</label>
+              <input type="number" step="0.01" formControlName="discountAmount" (input)="calculateTotals()" placeholder="0" />
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                <button type="button" (click)="setDiscountPreset(5)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">$5 Off</button>
+                <button type="button" (click)="setDiscountPreset(10)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">$10 Off</button>
+                <button type="button" (click)="setDiscountPreset(50)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">$50 Off</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Paid Amount ($)</label>
+              <input type="number" step="0.01" formControlName="paidAmount" (input)="calculateTotals()" placeholder="0" />
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                <button type="button" (click)="setPaymentPreset('full')" style="background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #0369a1; font-weight: 600; cursor: pointer;">⚡ Full (100%)</button>
+                <button type="button" (click)="setPaymentPreset('half')" style="background: #fef3c7; border: 1px solid #fde047; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #92400e; font-weight: 600; cursor: pointer;">🌓 Half (50%)</button>
+                <button type="button" (click)="setPaymentPreset('none')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">Credit ($0)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line Items -->
+          <h4 class="section-title">Purchase Order Items</h4>
+          <div formArrayName="items" class="items-list">
+            @for (item of itemsArray.controls; track $index; let i = $index) {
+              <div [formGroupName]="i" class="item-grid-row">
+                <div class="form-group flex-product">
+                  <label>Product *</label>
+                  <select formControlName="productId" (change)="onProductSelect(i)">
+                    <option value="">-- Select Product --</option>
+                    @for (prod of products; track prod.id) {
+                      <option [value]="prod.id">{{ prod.name }} (SKU: {{ prod.sku }}, Cost: ${{ prod.costPrice }})</option>
+                    }
+                  </select>
+                  <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                    @for (prod of products.slice(0, 4); track prod.id) {
+                      <button type="button" (click)="setProductPreset(i, prod.id)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">
+                        📦 {{ prod.name }}
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div class="form-group flex-small">
+                  <label>Qty *</label>
+                  <input type="number" formControlName="quantity" (input)="calculateTotals()" />
+                  <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px;">
+                    <button type="button" (click)="setQtyPreset(i, 1)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">1</button>
+                    <button type="button" (click)="setQtyPreset(i, 5)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">5</button>
+                    <button type="button" (click)="setQtyPreset(i, 10)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">10</button>
+                    <button type="button" (click)="setQtyPreset(i, 50)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">50</button>
+                  </div>
+                </div>
+                <div class="form-group flex-small">
+                  <label>Unit Cost ($) *</label>
+                  <input type="number" step="0.01" formControlName="unitCost" (input)="calculateTotals()" />
+                </div>
+                <div class="form-group flex-btn">
+                  <label>&nbsp;</label>
+                  <button type="button" (click)="removeItem(i)" class="btn-remove-item" title="Remove line item">&times;</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button type="button" (click)="addItem()" class="btn-add-item" title="Add another product row">+ Add Line Item</button>
+
+          <div class="summary-box">
+            <div>Subtotal: <strong>${{ calculatedSubtotal | number:'1.2-2' }}</strong></div>
+            <div>Tax Amount: <strong>${{ calculatedTax | number:'1.2-2' }}</strong></div>
+            <div>Discount: <strong>-${{ poForm.value.discountAmount || 0 | number:'1.2-2' }}</strong></div>
+            <div class="total-line">Grand Total Spend: <strong>${{ calculatedTotal | number:'1.2-2' }}</strong></div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeCreateModal()" class="btn-cancel" title="Cancel creation">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="poForm.invalid || itemsArray.length === 0" title="Save and submit purchase order">
+              Submit Purchase Order
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Details Modal -->
+  @if (selectedPO) {
+    <div class="modal-overlay">
+      <div class="modal-card wide">
+        <div class="modal-header">
+          <h3>PO Details: {{ selectedPO.purchaseOrderNumber }}</h3>
+          <button (click)="closeDetailsModal()" class="btn-close" title="Close Modal">✕</button>
+        </div>
+        <p>Supplier: {{ selectedPO.supplierCompanyName }} ({{ selectedPO.supplierName }})</p>
+
+        <div class="table-responsive margin-top">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Unit Cost</th>
+                <th>Total Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of selectedPO.items; track item.id) {
+                <tr>
+                  <td>{{ item.productName }}</td>
+                  <td>{{ item.productSKU }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ item.unitCost | number:'1.2-2' }}</td>
+                  <td>${{ item.totalPrice | number:'1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-actions">
+          <button (click)="closeDetailsModal()" class="btn-cancel" title="Close details">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

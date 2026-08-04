@@ -1,0 +1,287 @@
+<div class="employees-page">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">HUMAN RESOURCE MANAGEMENT (HRM)</span>
+      <h1 class="page-title">Employees Directory & Roster</h1>
+      <p class="page-subtitle">Manage company staff, department roles, payroll compensation, and employment status.</p>
+    </div>
+    <div class="page-actions">
+      <button (click)="openAddModal()" class="btn-create">+ Add New Employee</button>
+    </div>
+  </header>
+
+  <!-- KPI Summary Cards Row -->
+  <section class="kpi-cards-grid">
+    <div class="kpi-card highlight-navy">
+      <div class="kpi-head">
+        <span class="kpi-label">Total Staff Count</span>
+        <span class="kpi-icon">👥</span>
+      </div>
+      <strong class="kpi-val">{{ employees.length }} Employees</strong>
+      <span class="kpi-subtext">Across 6 Active Departments</span>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-head">
+        <span class="kpi-label">Active Staff Status</span>
+        <span class="kpi-icon">✅</span>
+      </div>
+      <strong class="kpi-val text-green">{{ getActiveCount() }} Active</strong>
+      <span class="kpi-subtext">{{ getOnLeaveCount() }} Currently on leave</span>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-head">
+        <span class="kpi-label">Monthly Payroll Expense</span>
+        <span class="kpi-icon">💵</span>
+      </div>
+      <strong class="kpi-val">{{ getTotalPayroll() | businessCurrency }}</strong>
+      <span class="kpi-subtext">Average {{ (getTotalPayroll() / (employees.length || 1)) | businessCurrency }} / staff</span>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-head">
+        <span class="kpi-label">Department Coverage</span>
+        <span class="kpi-icon">🏛️</span>
+      </div>
+      <strong class="kpi-val">100% Staffed</strong>
+      <span class="kpi-subtext">🔒 Compliant HR Records</span>
+    </div>
+  </section>
+
+  <!-- Main Enterprise Data Card -->
+  <main class="enterprise-card">
+    <!-- Filter & Search Toolbar -->
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Search by Employee ID, Name, Email or Role..."
+        class="search-input"
+      />
+      
+      <select [(ngModel)]="departmentFilter" class="filter-select">
+        <option value="ALL">All Departments</option>
+        @for (department of departmentOptions; track department) {
+          <option [value]="department">{{ department }}</option>
+        }
+      </select>
+
+      <select [(ngModel)]="statusFilter" class="filter-select">
+        <option value="ALL">All Statuses</option>
+        <option value="Active">Active</option>
+        <option value="On Leave">On Leave</option>
+        <option value="Terminated">Terminated</option>
+      </select>
+
+      <button class="btn-filter" (click)="resetFilters()">Reset Filters</button>
+    </div>
+
+    <!-- Table View -->
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Employee Code</th>
+            <th>Staff Member</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Hire Date</th>
+            <th>Monthly Salary</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (emp of getFilteredEmployees(); track emp.id) {
+            <tr>
+              <td>
+                <strong class="code-badge">{{ emp.employeeCode }}</strong>
+              </td>
+              <td>
+                <div class="user-cell">
+                  <span class="avatar-circle" [style.background]="emp.avatarColor">
+                    {{ emp.firstName.charAt(0) }}{{ emp.lastName.charAt(0) }}
+                  </span>
+                  <div class="user-details">
+                    <strong>{{ emp.firstName }} {{ emp.lastName }}</strong>
+                    <small>{{ emp.email }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="dept-pill" [class]="getDeptClass(emp.department)">
+                  {{ emp.department }}
+                </span>
+              </td>
+              <td>{{ emp.designation }}</td>
+              <td>{{ emp.hireDate | date:'mediumDate' }}</td>
+              <td>
+                <strong>{{ emp.monthlySalary | businessCurrency }}</strong>
+                <small class="per-mo">/ mo</small>
+              </td>
+              <td>
+                <span class="status-badge" [class]="emp.status.toLowerCase().replace(' ', '-')">
+                  ● {{ emp.status }}
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="actions-group">
+                  <button class="btn-action" (click)="viewEmployee(emp)" title="View Employee Profile">Details</button>
+                  <button class="btn-action text-red" (click)="deleteEmployee(emp.id)" title="Remove Employee">Delete</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-state">
+                <span>👥 No matching employee records found.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- ADD EMPLOYEE MODAL -->
+  @if (showAddModal) {
+    <div class="modal-overlay" (click)="showAddModal = false"></div>
+    <div class="modal-card animate-slide-up" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h2>➕ Add New Employee Record</h2>
+          <p>Register a staff member into the company HRM system.</p>
+        </div>
+        <button class="btn-modal-close" (click)="showAddModal = false">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="newEmp.firstName" placeholder="John" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="newEmp.lastName" placeholder="Doe" class="form-control" />
+          </div>
+          <div class="form-group col-span-2">
+            <label>Email Address</label>
+            <input type="email" [(ngModel)]="newEmp.email" placeholder="john.doe@company.com" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" [(ngModel)]="newEmp.phone" placeholder="+1 (555) 000-0000" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select [(ngModel)]="newEmp.department" class="form-control">
+              @for (department of departmentOptions; track department) {
+                <option [value]="department">{{ department }}</option>
+              }
+              <option value="CUSTOM">Other / Custom department</option>
+            </select>
+          </div>
+          @if (newEmp.department === 'CUSTOM') {
+            <div class="form-group col-span-2">
+              <label>Custom Department</label>
+              <input type="text" [(ngModel)]="customDepartment" placeholder="Enter department name" class="form-control" />
+            </div>
+          }
+          <div class="form-group col-span-2">
+            <label>Job Designation / Role</label>
+            <input type="text" [(ngModel)]="newEmp.designation" list="desig-presets" placeholder="e.g. Senior Officer, Supervisor..." class="form-control" />
+            <datalist id="desig-presets">
+              @for (d of activeDesignationPresets; track d) {
+                <option [value]="d"></option>
+              }
+            </datalist>
+            <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+              @for (d of activeDesignationPresets; track d) {
+                <button type="button" (click)="selectDesignationPreset(d)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 3px 8px; font-size: 0.7rem; color: #475569; cursor: pointer;">
+                  💼 {{ d }}
+                </button>
+              }
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Monthly Salary</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="newEmp.monthlySalary" placeholder="0.00" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Employment Status</label>
+            <select [(ngModel)]="newEmp.status" class="form-control">
+              <option value="Active">Active</option>
+              <option value="Probation">Probation</option>
+              <option value="Contract">Contract</option>
+              <option value="On Leave">On Leave</option>
+              <option value="Suspended">Suspended</option>
+              <option value="Terminated">Terminated</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-cancel" (click)="showAddModal = false">Cancel</button>
+        <button class="btn-save" (click)="saveNewEmployee()">Save Employee</button>
+      </footer>
+    </div>
+  }
+
+  <!-- EMPLOYEE DETAILS DRAWER -->
+  @if (selectedEmployee) {
+    <div class="modal-overlay" (click)="selectedEmployee = null"></div>
+    <div class="modal-card animate-slide-up" style="max-width: 520px;" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div class="drawer-user-head">
+          <span class="avatar-circle lg" [style.background]="selectedEmployee.avatarColor">
+            {{ selectedEmployee.firstName.charAt(0) }}{{ selectedEmployee.lastName.charAt(0) }}
+          </span>
+          <div>
+            <h2>{{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</h2>
+            <p>{{ selectedEmployee.designation }} • {{ selectedEmployee.department }}</p>
+          </div>
+        </div>
+        <button class="btn-modal-close" (click)="selectedEmployee = null">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="details-grid">
+          <div class="detail-item">
+            <small>Employee ID</small>
+            <strong>{{ selectedEmployee.employeeCode }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Email Address</small>
+            <strong>{{ selectedEmployee.email }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Phone Number</small>
+            <strong>{{ selectedEmployee.phone }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Joining Date</small>
+            <strong>{{ selectedEmployee.hireDate | date:'mediumDate' }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Compensation</small>
+            <strong class="text-indigo">{{ selectedEmployee.monthlySalary | businessCurrency }} / mo</strong>
+          </div>
+          <div class="detail-item">
+            <small>Status</small>
+            <span class="status-badge" [class]="selectedEmployee.status.toLowerCase().replace(' ', '-')">
+              ● {{ selectedEmployee.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button class="btn-cancel" (click)="selectedEmployee = null">Close</button>
+      </footer>
+    </div>
+  }
+</div>

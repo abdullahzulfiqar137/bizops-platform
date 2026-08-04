@@ -1,0 +1,7 @@
+.roles-page { display: flex; flex-direction: column; gap: 18px; }
+.role-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; }
+.role-summary > div { display: flex; flex-direction: column; padding: 14px; border-right: 1px solid #e2e8f0; }
+.role-summary span, td small { display: block; color: #64748b; font-size: .75rem; margin-top: 3px; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.checks label { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: #334155; }
+.checks input { accent-color: #2563eb; }

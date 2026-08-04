@@ -1,0 +1,145 @@
+<div class="expenses-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Operational Expenses</h1>
+      <p class="page-subtitle">Record business operational expenses, manage categories and payment methods</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-create">+ Record Expense</button>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="loadExpenses()"
+        placeholder="Search Title, Expense No, Reference..."
+        class="search-input"
+      />
+      <select [(ngModel)]="selectedCategory" (change)="loadExpenses()" class="select-filter">
+        <option value="">All Expense Categories</option>
+        @for (cat of categories; track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+        }
+      </select>
+      <button (click)="loadExpenses()" class="btn-filter">Filter</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Expense No</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Payment Method</th>
+            <th>Date</th>
+            <th>Created By</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (exp of expenses; track exp.id) {
+            <tr>
+              <td><strong>{{ exp.expenseNumber }}</strong></td>
+              <td>{{ exp.title }}</td>
+              <td><span class="chip">{{ exp.expenseCategoryName }}</span></td>
+              <td><strong class="text-danger">${{ exp.amount | number:'1.2-2' }}</strong></td>
+              <td>{{ exp.paymentMethodDescription }}</td>
+              <td>{{ exp.expenseDateUtc | date:'shortDate' }}</td>
+              <td>{{ exp.createdBy }}</td>
+              <td>
+                <div class="actions">
+                  <button (click)="openEditModal(exp)" class="btn-action">Edit</button>
+                  <button (click)="deleteExpense(exp.id)" class="btn-action btn-delete">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} Expenses)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create / Edit Expense Modal -->
+  @if (showFormModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>{{ editingExpense ? 'Edit Expense' : 'Record New Expense' }}</h3>
+
+        <form [formGroup]="expenseForm" (ngSubmit)="saveExpense()">
+          <div class="form-group">
+            <label>Expense Title *</label>
+            <input type="text" formControlName="title" placeholder="e.g. Office Electricity Bill, Rent" />
+
+            <!-- Quick Select Expense Presets -->
+            <div class="preset-chips-container" style="margin-top: 8px;">
+              <span class="preset-label" style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">⚡ Quick Expense Presets (Click to fill Title & Amount):</span>
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                @for (preset of activeExpensePresets; track preset.name) {
+                  <button type="button" class="preset-chip" (click)="selectExpensePreset(preset)" style="display: inline-flex; align-items: center; gap: 5px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; color: #334155; font-weight: 500; cursor: pointer;">
+                    <span>{{ preset.icon }}</span> {{ preset.name }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category *</label>
+              <select formControlName="expenseCategoryId">
+                <option value="">Select Category</option>
+                @for (cat of categories; track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Amount ($) *</label>
+              <input type="number" step="0.01" formControlName="amount" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Payment Method *</label>
+              <select formControlName="paymentMethod">
+                <option [ngValue]="1">Cash</option>
+                <option [ngValue]="2">Bank Transfer</option>
+                <option [ngValue]="3">Credit Card</option>
+                <option [ngValue]="4">Cheque</option>
+                <option [ngValue]="5">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Reference Number</label>
+              <input type="text" formControlName="referenceNumber" placeholder="TXN / Receipt No" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea formControlName="notes" rows="2"></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeFormModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="expenseForm.invalid">
+              {{ editingExpense ? 'Update' : 'Record' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

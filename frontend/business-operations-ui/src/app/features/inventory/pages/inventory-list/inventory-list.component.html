@@ -1,0 +1,158 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Stock Adjustments & Movements</h1>
+      <p class="page-subtitle">Record physical count stock adjustments and review inventory movement logs</p>
+    </div>
+    <button (click)="openAdjustmentModal()" class="btn-create">+ Record Stock Adjustment</button>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'adjustments'" (click)="setTab('adjustments')">
+      Stock Adjustments
+    </button>
+    <button class="tab" [class.active]="activeTab === 'movements'" (click)="setTab('movements')">
+      Inventory Movements Audit Log
+    </button>
+  </div>
+
+  <!-- Tab 1: Adjustments -->
+  @if (activeTab === 'adjustments') {
+    <div class="enterprise-card">
+      <div class="table-responsive">
+        <table class="enterprise-table">
+          <thead>
+            <tr>
+              <th>Adjustment No</th>
+              <th>Product SKU</th>
+              <th>Product Name</th>
+              <th>Type</th>
+              <th>Quantity</th>
+              <th>Reason</th>
+              <th>Adjusted By</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (adj of adjustments; track adj.id) {
+              <tr>
+                <td><strong>{{ adj.adjustmentNumber }}</strong></td>
+                <td>{{ adj.productSKU }}</td>
+                <td>{{ adj.productName }}</td>
+                <td>
+                  <span class="badge" [class.badge-success]="adj.adjustmentType === 1" [class.badge-warning]="adj.adjustmentType === 2">
+                    {{ adj.adjustmentTypeDescription }}
+                  </span>
+                </td>
+                <td><strong>{{ adj.adjustmentType === 1 ? '+' : '-' }}{{ adj.quantity }}</strong></td>
+                <td>{{ adj.reason }}</td>
+                <td>{{ adj.createdBy }}</td>
+                <td>{{ adj.createdAtUtc | date:'short' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Tab 2: Movements -->
+  @if (activeTab === 'movements') {
+    <div class="enterprise-card">
+      <div class="table-responsive">
+        <table class="enterprise-table">
+          <thead>
+            <tr>
+              <th>Movement No</th>
+              <th>Product</th>
+              <th>Movement Type</th>
+              <th>Previous Stock</th>
+              <th>Quantity</th>
+              <th>New Stock</th>
+              <th>Reference</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (mov of movements; track mov.id) {
+              <tr>
+                <td><strong>{{ mov.movementNumber }}</strong></td>
+                <td>{{ mov.productName }} ({{ mov.productSKU }})</td>
+                <td><span class="badge badge-info">{{ mov.movementTypeDescription }}</span></td>
+                <td>{{ mov.previousStock }}</td>
+                <td><strong>{{ mov.quantity }}</strong></td>
+                <td><strong>{{ mov.newStock }}</strong></td>
+                <td>{{ mov.referenceType }}</td>
+                <td>{{ mov.createdAtUtc | date:'short' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Create Adjustment Modal -->
+  @if (showModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>Record Stock Adjustment</h3>
+
+        <form [formGroup]="adjForm" (ngSubmit)="saveAdjustment()">
+          <div class="form-group">
+            <label>Select Product *</label>
+            <select formControlName="productId">
+              <option value="">-- Choose Product --</option>
+              @for (prod of products; track prod.id) {
+                <option [value]="prod.id">{{ prod.name }} (SKU: {{ prod.sku }}, Current: {{ prod.stockQuantity }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Adjustment Type *</label>
+              <select formControlName="adjustmentType">
+                <option [ngValue]="1">Addition (+ Stock In)</option>
+                <option [ngValue]="2">Deduction (- Stock Out / Damage)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Quantity *</label>
+              <input type="number" step="0.01" formControlName="quantity" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Reason *</label>
+            <input type="text" formControlName="reason" list="reason-presets" placeholder="Type or click a reason below..." />
+            <datalist id="reason-presets">
+              @for (r of reasonPresets; track r.text) {
+                <option [value]="r.text"></option>
+              }
+            </datalist>
+
+            <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+              @for (r of reasonPresets; track r.text) {
+                <button type="button" (click)="selectReasonPreset(r.text)" style="display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 3px 8px; font-size: 0.7rem; color: #475569; cursor: pointer;">
+                  <span>{{ r.icon }}</span> {{ r.text }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea formControlName="notes" rows="2"></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="adjForm.invalid">Record Adjustment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

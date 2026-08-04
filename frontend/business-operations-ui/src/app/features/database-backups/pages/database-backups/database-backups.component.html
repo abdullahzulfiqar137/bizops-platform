@@ -1,0 +1,90 @@
+<div class="backups-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">DATABASE & SECURITY</span>
+      <h1 class="page-title">Database Backups</h1>
+      <p class="page-subtitle">Create, download, and restore protected database snapshots.</p>
+    </div>
+    <button type="button" class="btn-create" (click)="createBackup()" [disabled]="creating">
+      {{ creating ? 'Creating backup...' : 'Create backup' }}
+    </button>
+  </header>
+
+  @if (message) {
+    <div class="notice" [class.error]="hasError" role="status">{{ message }}</div>
+  }
+
+  <section class="summary-grid" aria-label="Backup summary">
+    <div class="summary-item">
+      <span>Total snapshots</span>
+      <strong>{{ backups.length }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Latest backup</span>
+      <strong>{{ backups.length ? (backups[0].createdAtUtc | date:'medium') : 'Not available' }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Storage used</span>
+      <strong>{{ formatBytes(totalSize) }}</strong>
+    </div>
+  </section>
+
+  <section class="enterprise-card">
+    <div class="section-heading">
+      <div>
+        <h2>Available snapshots</h2>
+        <p>Backups are stored securely by the configured server retention policy.</p>
+      </div>
+      <button type="button" class="btn-secondary" (click)="loadBackups()" [disabled]="loading">Refresh</button>
+    </div>
+
+    @if (loading) {
+      <div class="state">Loading backups...</div>
+    } @else if (!backups.length) {
+      <div class="empty-state">
+        <strong>No backups found</strong>
+        <span>Create the first snapshot before making high-impact system changes.</span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="enterprise-table">
+          <thead>
+            <tr><th>File name</th><th>Created</th><th>Size</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            @for (backup of backups; track backup.fileName) {
+              <tr>
+                <td><strong>{{ backup.fileName }}</strong></td>
+                <td>{{ backup.createdAtUtc | date:'medium' }}</td>
+                <td>{{ formatBytes(backup.sizeBytes) }}</td>
+                <td>
+                  <div class="actions">
+                    <button type="button" class="btn-action" (click)="downloadBackup(backup)">Download</button>
+                    <button type="button" class="btn-action danger" (click)="openRestore(backup)">Restore</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (restoreTarget) {
+    <div class="modal-overlay" (click)="closeRestore()">
+      <div class="modal-card restore-dialog" role="dialog" aria-modal="true" aria-labelledby="restore-title" (click)="$event.stopPropagation()">
+        <h2 id="restore-title">Restore database snapshot</h2>
+        <p>This replaces the current database with <strong>{{ restoreTarget.fileName }}</strong>. Recent data may be lost.</p>
+        <label for="restoreConfirmation">Type <strong>RESTORE</strong> to continue</label>
+        <input id="restoreConfirmation" [(ngModel)]="restoreConfirmation" autocomplete="off" />
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeRestore()">Cancel</button>
+          <button type="button" class="btn-danger" (click)="restoreBackup()" [disabled]="restoreConfirmation !== 'RESTORE' || restoring">
+            {{ restoring ? 'Restoring...' : 'Restore snapshot' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

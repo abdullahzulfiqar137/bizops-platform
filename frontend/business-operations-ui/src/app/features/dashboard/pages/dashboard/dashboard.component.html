@@ -1,0 +1,107 @@
+<div class="dashboard-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ param || ts.translate('dash.title') }}</h1>
+      <p class="page-subtitle">{{ ts.translate('dash.subtitle') }}</p>
+    </div>
+    <button (click)="loadData()" class="btn-refresh">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>
+      {{ ts.translate('dash.refresh') }}
+    </button>
+  </div>
+
+  <!-- AI Summary Banner -->
+  @if (aiDigest) {
+    <div class="ai-banner">
+      <div class="ai-banner-header">
+        <span class="ai-badge">{{ ts.translate('dash.ai_digest') }}</span>
+        <span class="ai-time">Generated: {{ aiDigest.generatedAtUtc | date:'mediumTime' }}</span>
+      </div>
+      <p class="ai-summary">{{ aiDigest.executiveSummary }}</p>
+      <div class="ai-highlights">
+        @for (recommendation of aiDigest.operationalRecommendations; track recommendation) {
+          <div class="ai-pill">{{ recommendation }}</div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- KPI Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card primary">
+      <div class="kpi-icon">REV</div>
+      <div class="kpi-details">
+        <span class="kpi-label">{{ ts.translate('dash.kpi.revenue') }}</span>
+        <span class="kpi-value">{{ summary?.totalSalesRevenue | businessCurrency }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card success">
+      <div class="kpi-icon success">NET</div>
+      <div class="kpi-details">
+        <span class="kpi-label">{{ ts.translate('dash.kpi.profit') }}</span>
+        <span class="kpi-value">{{ summary?.netProfit | businessCurrency }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning">
+      <div class="kpi-icon warning">PO</div>
+      <div class="kpi-details">
+        <span class="kpi-label">{{ ts.translate('dash.kpi.purchases') }}</span>
+        <span class="kpi-value">{{ summary?.totalPurchases | businessCurrency }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card danger">
+      <div class="kpi-icon danger">OPEX</div>
+      <div class="kpi-details">
+        <span class="kpi-label">{{ ts.translate('dash.kpi.expenses') }}</span>
+        <span class="kpi-value">{{ summary?.totalExpenses | businessCurrency }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary KPIs Grid -->
+  <div class="kpi-grid secondary">
+    <div class="kpi-card info">
+      <span class="kpi-label">{{ ts.translate('dash.kpi.receivables') }}</span>
+      <span class="kpi-value">{{ summary?.totalReceivables | businessCurrency }}</span>
+    </div>
+    <div class="kpi-card info">
+      <span class="kpi-label">{{ ts.translate('dash.kpi.payables') }}</span>
+      <span class="kpi-value">{{ summary?.totalPayables | businessCurrency }}</span>
+    </div>
+    <div class="kpi-card info">
+      <span class="kpi-label">{{ ts.translate('dash.kpi.inventory_val') }}</span>
+      <span class="kpi-value">{{ summary?.totalInventoryValue | businessCurrency }}</span>
+    </div>
+    <div class="kpi-card danger-alert">
+      <span class="kpi-label">{{ ts.translate('dash.kpi.low_stock') }}</span>
+      <span class="kpi-value">{{ summary?.lowStockCount || 0 }} Items</span>
+    </div>
+  </div>
+
+  <!-- Actionable AI Insights Section -->
+  <div class="enterprise-card">
+    <div class="card-header">
+      <h3>{{ ts.translate('dash.actionable_insights') }}</h3>
+      <a routerLink="/ai-insights" class="link-view-all">{{ ts.translate('dash.view_all') }}</a>
+    </div>
+
+    <div class="insights-list">
+      @for (insight of insights; track insight.id) {
+        <div class="insight-item" [class]="'severity-' + insight.severity">
+          <div class="insight-meta">
+            <span class="badge" [class]="getSeverityBadgeClass(insight.severity)">{{ insight.severityDescription }}</span>
+            <span class="insight-category">{{ insight.categoryDescription }}</span>
+          </div>
+          <h4 class="insight-title">{{ insight.title }}</h4>
+          <p class="insight-desc">{{ insight.description }}</p>
+          <div class="insight-action">
+            <strong>Recommended Action:</strong> {{ insight.actionRecommendation }}
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

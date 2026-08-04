@@ -1,0 +1,148 @@
+<!-- Render Floating AI Robot Button & Drawer ONLY when NOT on full /ai-insights page -->
+@if (!isAiInsightsPage) {
+  <!-- Draggable Clean AI Robot Mascot Button -->
+  <div 
+    #fabElement
+    class="ai-robot-fab-clean"
+    [style.left.px]="posX"
+    [style.top.px]="posY"
+    [class.dragging]="isDragging"
+    [class.active]="isOpen"
+    (pointerdown)="onPointerDown($event)"
+    (pointerup)="onPointerUp($event)"
+    (click)="onFabClick($event)"
+    title="Drag me anywhere! • Click to open BizOps AI Assistant"
+  >
+    <!-- Clean Robot Head Avatar Circle -->
+    <div class="robot-avatar-center">
+      <img src="/ai-robot-avatar.png" alt="BizOps AI Robot" class="robot-avatar-img" draggable="false" />
+      <span class="robot-online-badge"></span>
+    </div>
+
+    <!-- Floating Text Pill -->
+    <div class="robot-label-pill">
+      <span class="sparkle-icon">✨</span>
+      <span class="label-text">BizOps AI</span>
+    </div>
+  </div>
+
+  <!-- Floating AI Drawer Window -->
+  @if (isOpen) {
+    <div class="ai-drawer-overlay" (click)="closeWidget()"></div>
+    
+    <div class="ai-drawer-container animate-slide-up">
+      <header class="drawer-header">
+        <div class="header-left">
+          <div class="bot-icon">
+            <img src="/ai-robot-avatar.png" alt="AI Robot" class="mini-robot-img" draggable="false" />
+          </div>
+          <div>
+            <h3>BizOps AI Assistant</h3>
+            <span class="online-pill">
+              <span class="dot"></span> DeepSeek Powered • Persistent DB
+            </span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button (click)="toggleHistory()" class="btn-history-toggle" title="View Chat History">
+            📜 History ▾
+          </button>
+          <button (click)="startNewChat()" class="btn-new-chat-head" title="Start New Chat">
+            + New
+          </button>
+          <button (click)="openFullAiPage()" class="btn-expand" title="Open Full AI Insights Page">
+            ↗
+          </button>
+          <button (click)="closeWidget()" class="btn-close" title="Close AI Assistant">✕</button>
+        </div>
+      </header>
+
+      <!-- History Drawer Panel -->
+      @if (showHistory) {
+        <div class="history-panel">
+          <div class="history-panel-header">
+            <h4>History ▾</h4>
+            <div style="display: flex; gap: 6px;">
+              <button (click)="clearAllDbHistory()" class="btn-clear-db" title="Clear all history from Database">🗑️ Clear DB</button>
+              <button (click)="startNewChat()" class="btn-new-chat-panel">+ New Chat</button>
+            </div>
+          </div>
+          
+          <div class="history-scroll-area">
+            @if (isLoadingHistory) {
+              <div class="history-status-msg">Loading history...</div>
+            } @else if (historyGroups.length === 0) {
+              <div class="history-status-msg">No past chat sessions found.</div>
+            } @else {
+              @for (group of historyGroups; track group.period) {
+                <div class="history-group">
+                  <div class="history-date-label">
+                    <span>{{ group.period }}</span>
+                    <hr class="group-line" />
+                  </div>
+                  @for (sess of group.sessions; track sess.sessionId) {
+                    <div class="history-item-pill" [class.active]="sess.sessionId === sessionId" (click)="selectHistorySession(sess)" title="{{ sess.firstPrompt }}">
+                      <span class="item-title-text">{{ sess.title }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Quick Prompts Toolbar -->
+      <div class="quick-prompts">
+        <button (click)="sendQuickPrompt('Show sales summary')" class="chip">📈 Sales</button>
+        <button (click)="sendQuickPrompt('Stock alerts')" class="chip">📦 Stock</button>
+        <button (click)="sendQuickPrompt('How can I increase profit margins?')" class="chip">💡 Profit</button>
+      </div>
+
+      <!-- Chat Conversation Messages -->
+      <div #chatContainer class="chat-messages" (click)="onDocumentClick($event)">
+        @for (msg of messages; track $index) {
+          <div class="msg-row" [class.user]="msg.sender === 'user'" [class.assistant]="msg.sender === 'assistant'">
+            @if (msg.sender === 'assistant') {
+              <div class="msg-avatar">
+                <img src="/ai-robot-avatar.png" alt="AI Robot" class="avatar-msg-img" draggable="false" />
+              </div>
+            }
+            <div class="msg-bubble">
+              <div class="msg-text" [innerHTML]="formatMessage(msg.text)"></div>
+              <span class="msg-time">{{ msg.time | date:'shortTime' }}</span>
+            </div>
+          </div>
+        }
+        @if (isSending) {
+          <div class="msg-row assistant">
+            <div class="msg-avatar">
+              <img src="/ai-robot-avatar.png" alt="AI Robot" class="avatar-msg-img" draggable="false" />
+            </div>
+            <div class="msg-bubble thinking">
+              <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>
+              AI Robot is scanning database & generating intelligence...
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Chat Input Form -->
+      <footer class="drawer-footer">
+        <div class="input-wrapper">
+          <textarea
+            #inputBox
+            [(ngModel)]="userQuestion"
+            (keyup.enter)="sendMessage()"
+            placeholder="Ask AI Robot anything about sales, stock, accounting, profit..."
+            rows="1"
+            [disabled]="isSending"
+          ></textarea>
+          <button (click)="sendMessage()" [disabled]="!userQuestion.trim() || isSending" class="btn-send">
+            ➔
+          </button>
+        </div>
+      </footer>
+    </div>
+  }
+}

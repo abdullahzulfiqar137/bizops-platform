@@ -1,0 +1,203 @@
+<div class="suppliers-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Suppliers Management</h1>
+      <p class="page-subtitle">Manage supplier vendors, payable balances, and purchase order history</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-create">+ Add New Supplier</button>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="loadSuppliers()"
+        placeholder="Search supplier name, company, email, phone..."
+        class="search-input"
+      />
+      <button (click)="loadSuppliers()" class="btn-filter">Filter</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Supplier Contact</th>
+            <th>Company Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Payable Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sup of suppliers; track sup.id) {
+            <tr>
+              <td><strong>{{ sup.supplierCode }}</strong></td>
+              <td>{{ sup.name }}</td>
+              <td><strong>{{ sup.companyName }}</strong></td>
+              <td>{{ sup.email }}</td>
+              <td>{{ sup.phoneNumber }}</td>
+              <td>
+                <strong [class.text-danger]="sup.currentBalance > 0">
+                  ${{ sup.currentBalance | number:'1.2-2' }}
+                </strong>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="sup.isActive" [class.badge-danger]="!sup.isActive">
+                  {{ sup.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button (click)="openEditModal(sup)" class="btn-action">Edit</button>
+                  <button (click)="viewPurchases(sup)" class="btn-action btn-history">Purchases</button>
+                  <button (click)="deleteSupplier(sup.id)" class="btn-action btn-delete">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} Suppliers)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create / Edit Supplier Modal -->
+  @if (showFormModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>{{ editingSupplier ? 'Edit Supplier' : 'Create New Supplier' }}</h3>
+
+        <form [formGroup]="supplierForm" (ngSubmit)="saveSupplier()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Contact Name *</label>
+              <input type="text" formControlName="name" placeholder="Contact Person Name" />
+            </div>
+            <div class="form-group">
+              <label>Company Name *</label>
+              <input type="text" formControlName="companyName" list="company-presets" placeholder="Company / Business Name" />
+              <datalist id="company-presets">
+                @for (c of companyPresets; track c) {
+                  <option [value]="c"></option>
+                }
+              </datalist>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" formControlName="email" placeholder="supplier@domain.com" />
+            </div>
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input type="text" formControlName="phoneNumber" placeholder="+92 300 1234567" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" formControlName="address" placeholder="Street Address" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" formControlName="city" list="supplier-city-presets" placeholder="City name..." />
+              <datalist id="supplier-city-presets">
+                @for (c of cityPresets; track c) {
+                  <option [value]="c"></option>
+                }
+              </datalist>
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                @for (c of cityPresets; track c) {
+                  <button type="button" (click)="selectCityPreset(c)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 2px 8px; font-size: 0.7rem; color: #475569; cursor: pointer;">
+                    📍 {{ c }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <input type="text" formControlName="state" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Postal Code</label>
+              <input type="text" formControlName="postalCode" />
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" formControlName="country" />
+            </div>
+          </div>
+
+          @if (!editingSupplier) {
+            <div class="form-group">
+              <label>Opening Payable Balance ($)</label>
+              <input type="number" step="0.01" formControlName="openingBalance" />
+            </div>
+          }
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeFormModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="supplierForm.invalid">
+              {{ editingSupplier ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Purchase History Modal -->
+  @if (selectedSupplierForHistory) {
+    <div class="modal-overlay">
+      <div class="modal-card wide">
+        <h3>Purchase History: {{ selectedSupplierForHistory.companyName }}</h3>
+        <p>Purchase orders for vendor {{ selectedSupplierForHistory.supplierCode }}</p>
+
+        <div class="table-responsive">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>PO Number</th>
+                <th>Date</th>
+                <th>Total Amount</th>
+                <th>Paid Amount</th>
+                <th>Remaining Balance</th>
+                <th>Payment Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (po of purchaseHistory; track po.purchaseId) {
+                <tr>
+                  <td><strong>{{ po.purchaseOrderNumber }}</strong></td>
+                  <td>{{ po.purchaseDateUtc | date:'shortDate' }}</td>
+                  <td>${{ po.totalAmount | number:'1.2-2' }}</td>
+                  <td>${{ po.paidAmount | number:'1.2-2' }}</td>
+                  <td>${{ po.remainingBalance | number:'1.2-2' }}</td>
+                  <td><span class="badge badge-info">{{ po.paymentStatus }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-actions">
+          <button (click)="closeHistoryModal()" class="btn-cancel">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

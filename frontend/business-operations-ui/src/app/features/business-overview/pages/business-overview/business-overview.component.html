@@ -1,0 +1,206 @@
+<div class="overview-page">
+  <!-- Hero Header Banner -->
+  <div class="hero-banner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg lucideSparkles class="badge-icon"></svg>
+        <span>SYSTEM DIRECTORY & OPERATIONAL GUIDE</span>
+      </div>
+      <h1 class="hero-title">BizOps Enterprise Overview</h1>
+      <p class="hero-subtitle">
+        Welcome to BizOps Enterprise — an all-in-one business management platform designed to streamline 
+        sales, inventory, purchasing, financials, customer relationships, and AI-driven intelligence for your organization.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <span class="stat-num">23</span>
+          <span class="stat-lbl">Integrated Modules</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">100%</span>
+          <span class="stat-lbl">Real-time Analytics</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">AI</span>
+          <span class="stat-lbl">Smart Insights</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Search & Category Filter Section -->
+  <div class="controls-section">
+    <div class="search-box">
+      <svg lucideSearch class="search-icon"></svg>
+      <input
+        type="text"
+        placeholder="Search module (e.g. sales, stock, invoice, accounting, users)..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="search-input"
+      />
+      @if (searchQuery()) {
+        <button class="clear-btn" (click)="searchQuery.set('')">✕</button>
+      }
+    </div>
+
+    <div class="category-tabs">
+      <button 
+        [class.active]="selectedCategory() === 'all'" 
+        (click)="selectedCategory.set('all')" 
+        class="tab-btn"
+      >
+        All Modules ({{ modules.length }})
+      </button>
+      <button 
+        [class.active]="selectedCategory() === 'operations'" 
+        (click)="selectedCategory.set('operations')" 
+        class="tab-btn"
+      >
+        Core Operations
+      </button>
+      <button 
+        [class.active]="selectedCategory() === 'inventory'" 
+        (click)="selectedCategory.set('inventory')" 
+        class="tab-btn"
+      >
+        Catalog & Inventory
+      </button>
+      <button 
+        [class.active]="selectedCategory() === 'financials'" 
+        (click)="selectedCategory.set('financials')" 
+        class="tab-btn"
+      >
+        Financials & Analytics
+      </button>
+      <button 
+        [class.active]="selectedCategory() === 'team'" 
+        (click)="selectedCategory.set('team')" 
+        class="tab-btn"
+      >
+        Team & Administration
+      </button>
+    </div>
+  </div>
+
+  <!-- Modules Cards Grid -->
+  <div class="modules-grid">
+    @for (mod of filteredModules(); track mod.id) {
+      <div class="module-card" [style.border-top-color]="mod.color">
+        <div class="card-header">
+          <div class="icon-wrap" [style.background-color]="mod.color + '15'" [style.color]="mod.color">
+            @switch (mod.icon) {
+              @case ('dashboard') { <svg lucideLayoutDashboard class="mod-icon"></svg> }
+              @case ('bot') { <svg lucideBot class="mod-icon"></svg> }
+              @case ('sales') { <svg lucideReceiptText class="mod-icon"></svg> }
+              @case ('purchases') { <svg lucideShoppingCart class="mod-icon"></svg> }
+              @case ('payments') { <svg lucideCreditCard class="mod-icon"></svg> }
+              @case ('expenses') { <svg lucideWalletCards class="mod-icon"></svg> }
+              @case ('returns') { <svg lucideUndo2 class="mod-icon"></svg> }
+              @case ('products') { <svg lucidePackage class="mod-icon"></svg> }
+              @case ('inventory') { <svg lucideWarehouse class="mod-icon"></svg> }
+              @case ('categories') { <svg lucideTags class="mod-icon"></svg> }
+              @case ('customers') { <svg lucideUsersRound class="mod-icon"></svg> }
+              @case ('suppliers') { <svg lucideTruck class="mod-icon"></svg> }
+              @case ('reports') { <svg lucideChartNoAxesCombined class="mod-icon"></svg> }
+              @case ('accounting') { <svg lucideLandmark class="mod-icon"></svg> }
+              @case ('audit') { <svg lucideScrollText class="mod-icon"></svg> }
+              @case ('imports') { <svg lucideFileUp class="mod-icon"></svg> }
+              @case ('notifications') { <svg lucideBell class="mod-icon"></svg> }
+              @case ('team-chat') { <svg lucideMessageSquare class="mod-icon"></svg> }
+              @case ('employees') { <svg lucideBriefcaseBusiness class="mod-icon"></svg> }
+              @case ('users') { <svg lucideUserCog class="mod-icon"></svg> }
+              @case ('profile') { <svg lucideBuilding2 class="mod-icon"></svg> }
+              @case ('subscriptions') { <svg lucideCreditCard class="mod-icon"></svg> }
+              @case ('backups') { <svg lucideDatabaseBackup class="mod-icon"></svg> }
+            }
+          </div>
+          <div class="header-titles">
+            <h3 class="mod-title">{{ mod.title }}</h3>
+            <span class="mod-cat-badge">{{ getCategoryLabel(mod.category) }}</span>
+          </div>
+        </div>
+
+        <p class="mod-short">{{ mod.shortDesc }}</p>
+
+        <div class="details-section">
+          <div class="detail-block">
+            <span class="detail-label">⚡ What it does:</span>
+            <p class="detail-text">{{ mod.whatItDoes }}</p>
+          </div>
+
+          <div class="detail-block">
+            <span class="detail-label">🎯 Why & When to use:</span>
+            <p class="detail-text">{{ mod.whyUseIt }}</p>
+          </div>
+
+          <div class="highlights-list">
+            @for (h of mod.highlights; track h) {
+              <span class="h-chip">
+                <svg lucideCheckCircle2 class="chip-icon"></svg>
+                {{ h }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <a [routerLink]="mod.route" class="btn-launch" [style.background]="mod.color">
+            <span>Open {{ mod.title }}</span>
+            <svg lucideArrowRight class="btn-icon"></svg>
+          </a>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <svg lucideBookOpen class="empty-icon"></svg>
+        <h3>No matching modules found</h3>
+        <p>Try searching for a different keyword like "sales", "stock", "tax", or "users".</p>
+        <button (click)="searchQuery.set(''); selectedCategory.set('all')" class="btn-reset">
+          Reset Filters
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Operational Workflow Guide -->
+  <div class="workflow-section">
+    <div class="section-title-wrap">
+      <svg lucideShieldCheck class="section-icon"></svg>
+      <h2>Recommended Business Operational Workflow</h2>
+      <p>Follow these 5 steps to maximize your operational efficiency using BizOps Enterprise:</p>
+    </div>
+
+    <div class="workflow-steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h4>Business & Team Setup</h4>
+        <p>Configure company details in <strong>Business Profile</strong> and grant staff accounts with custom roles in <strong>Users & Access</strong>.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h4>Catalog & Initial Stock</h4>
+        <p>Setup product <strong>Categories</strong>, add <strong>Products</strong> with SKU & pricing, then record initial levels via <strong>Stock Adjustments</strong>.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h4>Entity Directories</h4>
+        <p>Add key business contacts into <strong>Customers CRM</strong> and vendor records in <strong>Suppliers Directory</strong> for fast invoicing.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h4>Daily Operations</h4>
+        <p>Process customer <strong>Sales & Invoices</strong>, issue <strong>Purchase Orders</strong> to vendors, track <strong>Payments</strong> & record daily <strong>Expenses</strong>.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <h4>Intelligence & Reporting</h4>
+        <p>Monitor profit margins in <strong>Financial Reports</strong>, review automated ledger entries in <strong>Accounting</strong>, and consult <strong>AI Insights</strong>.</p>
+      </div>
+    </div>
+  </div>
+</div>

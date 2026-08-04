@@ -1,0 +1,7 @@
+.field-error-text {
+  color: #f87171;
+  font-size: 0.775rem;
+  font-weight: 500;
+  margin-top: 4px;
+  display: inline-block;
+}

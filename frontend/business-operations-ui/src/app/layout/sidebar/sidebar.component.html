@@ -1,0 +1,122 @@
+<aside class="sidebar" [class.open]="isOpen" [class.collapsed]="collapsed">
+  <div class="brand-header">
+    <a routerLink="/business-overview" (click)="onNavClick()" class="brand-link" title="BizOps Enterprise Overview">
+      <div class="brand-logo-wrap">
+        <img src="/brand/bizops-logo.png" alt="BizOps" class="brand-logo" />
+      </div>
+      <div class="brand-text">
+        <span class="title">BizOps</span>
+        <span class="version">Enterprise v1.0</span>
+      </div>
+    </a>
+    <button (click)="onClose()" class="btn-close-mobile">✕</button>
+  </div>
+
+  <nav class="nav-menu">
+    <div class="nav-section">MAIN</div>
+    <a routerLink="/dashboard" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideLayoutDashboard class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.dashboard') }}</span>
+    </a>
+    <a routerLink="/ai-insights" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideBot class="icon" aria-hidden="true"></svg>
+      <span>AI Insights</span>
+    </a>
+
+    <div class="nav-section">OPERATIONS</div>
+    <a routerLink="/sales" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideReceiptText class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.sales') }}</span>
+    </a>
+    <a routerLink="/purchases" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideShoppingCart class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.purchases') }}</span>
+    </a>
+    <a routerLink="/payments" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideCreditCard class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.payments') }}</span>
+    </a>
+    <a routerLink="/expenses" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideWalletCards class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.expenses') }}</span>
+    </a>
+    <a routerLink="/returns" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideUndo2 class="icon" aria-hidden="true"></svg>
+      <span>Returns Center</span>
+    </a>
+
+    <div class="nav-section">INVENTORY & CATALOG</div>
+    <a routerLink="/products" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucidePackage class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.products') }}</span>
+    </a>
+    <a routerLink="/inventory" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideWarehouse class="icon" aria-hidden="true"></svg>
+      <span>Stock Adjustments</span>
+    </a>
+    <a routerLink="/categories" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideTags class="icon" aria-hidden="true"></svg>
+      <span>Categories</span>
+    </a>
+
+    <div class="nav-section">RELATIONSHIPS</div>
+    <a routerLink="/customers" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideUsersRound class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.customers') }}</span>
+    </a>
+    <a routerLink="/suppliers" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideTruck class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.suppliers') }}</span>
+    </a>
+
+    <div class="nav-section">ANALYTICS & SYSTEM</div>
+    <a routerLink="/reports" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideChartNoAxesCombined class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.reports') }}</span>
+    </a>
+    <a routerLink="/accounting" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideLandmark class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.accounting') }}</span>
+    </a>
+    <a routerLink="/audit-logs" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideScrollText class="icon" aria-hidden="true"></svg>
+      <span>Audit Logs</span>
+    </a>
+    <a routerLink="/imports" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideFileUp class="icon" aria-hidden="true"></svg>
+      <span>Data Imports</span>
+    </a>
+    <a routerLink="/notifications" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideBell class="icon" aria-hidden="true"></svg>
+      <span>Notifications</span>
+    </a>
+
+    <div class="nav-section">TEAM & COLLABORATION</div>
+    <a routerLink="/team-chat" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideMessageSquare class="icon" aria-hidden="true"></svg>
+      <span>Team Live Chat</span>
+    </a>
+    <a routerLink="/employees" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideBriefcaseBusiness class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.employees') }}</span>
+    </a>
+
+    <div class="nav-section">ADMINISTRATION</div>
+    <a routerLink="/users" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideUserCog class="icon" aria-hidden="true"></svg>
+      <span>Users & Access</span>
+    </a>
+    <a routerLink="/business-profile" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideBuilding2 class="icon" aria-hidden="true"></svg>
+      <span>{{ ts.translate('nav.settings') }}</span>
+    </a>
+    <a routerLink="/subscriptions" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideCreditCard class="icon" aria-hidden="true"></svg>
+      <span>Subscription & Billing</span>
+    </a>
+    <a routerLink="/backups" routerLinkActive="active" (click)="onNavClick()" class="nav-item">
+      <svg lucideDatabaseBackup class="icon" aria-hidden="true"></svg>
+      <span>Database Backups</span>
+    </a>
+  </nav>
+</aside>

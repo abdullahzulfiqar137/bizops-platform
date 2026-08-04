@@ -1,0 +1,292 @@
+<div class="sales-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ ts.translate('sales.title') }}</h1>
+      <p class="page-subtitle">{{ ts.translate('sales.subtitle') }}</p>
+    </div>
+    <div class="header-action-group">
+      <button (click)="exportSalesCsv()" class="btn-export-csv" title="Export sales invoices to CSV spreadsheet">
+        📥 {{ ts.translate('sales.btn_export') }}
+      </button>
+      <button (click)="openCreateModal()" class="btn-create" title="Issue a new customer sales invoice (POS)">
+        ➕ {{ ts.translate('sales.btn_create') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="enterprise-card">
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="loadSales()"
+        [placeholder]="ts.translate('sales.search_ph')"
+        class="search-input"
+      />
+      <button (click)="loadSales()" class="btn-filter" title="Apply search filter">Filter</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>{{ ts.translate('sales.th_inv') }}</th>
+            <th>{{ ts.translate('sales.th_customer') }}</th>
+            <th>{{ ts.translate('sales.th_date') }}</th>
+            <th>{{ ts.translate('sales.th_subtotal') }}</th>
+            <th>{{ ts.translate('sales.th_tax_disc') }}</th>
+            <th>{{ ts.translate('sales.th_total') }}</th>
+            <th>{{ ts.translate('sales.th_paid_due') }}</th>
+            <th>{{ ts.translate('sales.th_status') }}</th>
+            <th>{{ ts.translate('sales.th_actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sale of sales; track sale.id) {
+            <tr>
+              <td><strong>{{ sale.invoiceNumber }}</strong></td>
+              <td>{{ sale.customerName }}</td>
+              <td>{{ sale.saleDateUtc | date:'shortDate' }}</td>
+              <td>${{ sale.subTotal | number:'1.2-2' }}</td>
+              <td>${{ sale.taxAmount | number:'1.2-2' }} / -${{ sale.discountAmount | number:'1.2-2' }}</td>
+              <td><strong>${{ sale.totalAmount | number:'1.2-2' }}</strong></td>
+              <td>
+                <span class="text-success">${{ sale.paidAmount | number:'1.2-2' }}</span> /
+                <span class="text-danger">${{ sale.dueAmount | number:'1.2-2' }}</span>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="sale.status === 2" [class.badge-danger]="sale.status === 3" [class.badge-warning]="sale.status === 1">
+                  {{ sale.statusDescription }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button (click)="viewDetails(sale)" class="btn-action" title="View sales invoice line items">{{ ts.translate('sales.btn_view') }}</button>
+                  @if (sale.status !== 3) {
+                    <button (click)="cancelSale(sale.id)" class="btn-action btn-cancel-sale" title="Cancel invoice & revert inventory">{{ ts.translate('sales.btn_cancel') }}</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <span>Showing Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} Invoices)</span>
+      <div class="page-buttons">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" title="Previous page">Previous</button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" title="Next page">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Invoice Modal -->
+  @if (showCreateModal) {
+    <div class="modal-overlay">
+      <div class="modal-card extra-wide">
+        <div class="modal-header">
+          <h3>New Sales Invoice</h3>
+          <button (click)="closeCreateModal()" class="btn-close" title="Close Modal">✕</button>
+        </div>
+
+        <form [formGroup]="saleForm" (ngSubmit)="saveSale()">
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label>Select Customer *</label>
+              <select formControlName="customerId">
+                <option value="">-- Choose Customer --</option>
+                @for (cust of customers; track cust.id) {
+                  <option [value]="cust.id">{{ cust.name }} (Code: {{ cust.customerCode }})</option>
+                }
+              </select>
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                @for (cust of customers.slice(0, 4); track cust.id) {
+                  <button type="button" (click)="setCustomerPreset(cust.id)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">
+                    👤 {{ cust.name }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Tax Rate (%)</label>
+              <input type="number" step="0.01" formControlName="taxRate" (input)="calculateTotals()" placeholder="0" />
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                @for (t of taxPresets; track t.value) {
+                  <button type="button" (click)="setTaxPreset(t.value)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">
+                    {{ t.label }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Discount Amount ($)</label>
+              <input type="number" step="0.01" formControlName="discountAmount" (input)="calculateTotals()" placeholder="0" />
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                <button type="button" (click)="setDiscountPreset(5)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">$5 Off</button>
+                <button type="button" (click)="setDiscountPreset(10)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">$10 Off</button>
+                <button type="button" (click)="setDiscountPreset(50)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">$50 Off</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Initial Payment ($)</label>
+              <input type="number" step="0.01" formControlName="paidAmount" (input)="calculateTotals()" placeholder="0" />
+              <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                <button type="button" (click)="setPaymentPreset('full')" style="background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #0369a1; font-weight: 600; cursor: pointer;">⚡ Full (100%)</button>
+                <button type="button" (click)="setPaymentPreset('half')" style="background: #fef3c7; border: 1px solid #fde047; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #92400e; font-weight: 600; cursor: pointer;">🌓 Half (50%)</button>
+                <button type="button" (click)="setPaymentPreset('none')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">Credit ($0)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line Items -->
+          <h4 class="section-title">Invoice Line Items</h4>
+          <div formArrayName="items" class="items-list">
+            @for (item of itemsArray.controls; track $index; let i = $index) {
+              <div [formGroupName]="i" class="item-grid-row">
+                <div class="form-group flex-product">
+                  <label>Product *</label>
+                  <select formControlName="productId" (change)="onProductSelect(i)">
+                    <option value="">-- Select Product --</option>
+                    @for (prod of products; track prod.id) {
+                      <option [value]="prod.id">{{ prod.name }} (SKU: {{ prod.sku }}, Price: ${{ prod.salePrice }})</option>
+                    }
+                  </select>
+                  <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;">
+                    @for (prod of products.slice(0, 4); track prod.id) {
+                      <button type="button" (click)="setProductPreset(i, prod.id)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 6px; font-size: 0.68rem; color: #475569; cursor: pointer;">
+                        📦 {{ prod.name }}
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div class="form-group flex-small">
+                  <label>Qty *</label>
+                  <input type="number" formControlName="quantity" (input)="calculateTotals()" />
+                  <div class="chips-scroll" style="display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px;">
+                    <button type="button" (click)="setQtyPreset(i, 1)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">1</button>
+                    <button type="button" (click)="setQtyPreset(i, 5)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">5</button>
+                    <button type="button" (click)="setQtyPreset(i, 10)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">10</button>
+                    <button type="button" (click)="setQtyPreset(i, 50)" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 5px; font-size: 0.65rem; color: #334155; cursor: pointer;">50</button>
+                  </div>
+                </div>
+                <div class="form-group flex-small">
+                  <label>Unit Price ($) *</label>
+                  <input type="number" step="0.01" formControlName="unitPrice" (input)="calculateTotals()" />
+                </div>
+                <div class="form-group flex-btn">
+                  <label>&nbsp;</label>
+                  <button type="button" (click)="removeItem(i)" class="btn-remove-item" title="Remove item row">&times;</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button type="button" (click)="addItem()" class="btn-add-item" title="Add line item row">+ Add Line Item</button>
+
+          <div class="invoice-summary-box">
+            <div>Subtotal: <strong>${{ calculatedSubtotal | number:'1.2-2' }}</strong></div>
+            <div>Tax Amount: <strong>${{ calculatedTax | number:'1.2-2' }}</strong></div>
+            <div>Discount: <strong>-${{ saleForm.value.discountAmount || 0 | number:'1.2-2' }}</strong></div>
+            <div class="total-line">Grand Total: <strong>${{ calculatedTotal | number:'1.2-2' }}</strong></div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeCreateModal()" class="btn-cancel" title="Cancel creation">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="saleForm.invalid || itemsArray.length === 0" title="Submit & Issue Invoice">
+              Submit & Issue Invoice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- View Invoice Details Modal -->
+  @if (selectedSale) {
+    <div class="modal-overlay">
+      <div class="modal-card wide printable-area">
+        <div class="modal-header">
+          <div class="header-title-group">
+            <h3>Sales Invoice: {{ selectedSale.invoiceNumber }}</h3>
+            <span class="status-pill-sub" [class.paid]="selectedSale.status === 2" [class.canceled]="selectedSale.status === 3">
+              {{ selectedSale.statusDescription }}
+            </span>
+          </div>
+          <button (click)="closeDetailsModal()" class="btn-close" title="Close Modal">✕</button>
+        </div>
+
+        <div class="specimen-printable-card">
+          <div class="printable-header">
+            <div class="company-brand">
+              <div class="brand-logo-small">HQ</div>
+              <div>
+                <strong class="company-title">Acme Enterprise Operations Ltd</strong>
+                <p class="company-sub">100 Enterprise Way, Suite 400 · Tax ID: US-987654321</p>
+              </div>
+            </div>
+            <div class="inv-badge-box">
+              <div class="inv-number-code">INVOICE #{{ selectedSale.invoiceNumber }}</div>
+              <small class="inv-date">Date: {{ selectedSale.saleDateUtc | date:'mediumDate' }}</small>
+            </div>
+          </div>
+
+          <div class="printable-customer-bar">
+            <div class="bill-to">
+              <span>BILL TO:</span>
+              <strong>{{ selectedSale.customerName }}</strong>
+              <small>Code: {{ selectedSale.customerCode }}</small>
+            </div>
+            <div class="payment-summary-pill">
+              <span>PAID: <strong>${{ selectedSale.paidAmount | number:'1.2-2' }}</strong></span>
+              <span>DUE: <strong class="text-danger">${{ selectedSale.dueAmount | number:'1.2-2' }}</strong></span>
+            </div>
+          </div>
+
+          <div class="table-responsive margin-top">
+            <table class="enterprise-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Qty</th>
+                  <th>Unit Price</th>
+                  <th class="text-right">Total Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of selectedSale.items; track item.id) {
+                  <tr>
+                    <td><strong>{{ item.productName }}</strong></td>
+                    <td><code>{{ item.productSKU }}</code></td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.unitPrice | number:'1.2-2' }}</td>
+                    <td class="text-right"><strong>${{ item.totalPrice | number:'1.2-2' }}</strong></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="printable-totals">
+            <div class="totals-line"><span>Subtotal:</span> <strong>${{ selectedSale.subTotal | number:'1.2-2' }}</strong></div>
+            <div class="totals-line"><span>Tax ({{ selectedSale.taxRate }}%):</span> <strong>+${{ selectedSale.taxAmount | number:'1.2-2' }}</strong></div>
+            <div class="totals-line"><span>Discount:</span> <strong>-${{ selectedSale.discountAmount | number:'1.2-2' }}</strong></div>
+            <div class="totals-line grand-total"><span>Grand Total:</span> <strong>${{ selectedSale.totalAmount | number:'1.2-2' }}</strong></div>
+          </div>
+        </div>
+
+        <div class="modal-actions gap-actions">
+          <button (click)="printThermalReceipt(selectedSale)" class="btn-thermal-print" title="Print POS counter thermal receipt">
+            🧾 {{ ts.translate('sales.btn_print_pos') }}
+          </button>
+          <button (click)="printInvoice(selectedSale)" class="btn-pdf-print" title="Print PDF Invoice">
+            🖨️ {{ ts.translate('sales.btn_print_pdf') }}
+          </button>
+          <button (click)="closeDetailsModal()" class="btn-cancel" title="Close details">{{ ts.translate('action.close') }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

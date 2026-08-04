@@ -1,0 +1,62 @@
+<div class="roles-page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Roles & Access</h1>
+      <p class="page-subtitle">Assign security roles to active user accounts.</p>
+    </div>
+  </header>
+
+  <section class="role-summary">
+    @for (role of roles; track role.id) {
+      <div>
+        <strong>{{role.name}}</strong>
+        <span>{{role.description||'System access role'}}</span>
+      </div>
+    }
+  </section>
+
+  <section class="enterprise-card">
+    <div class="table-responsive">
+      <table class="enterprise-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Status</th>
+            <th>Assigned roles</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.id) {
+            <tr>
+              <td>
+                <strong>{{user.fullName}}</strong>
+                <small>{{user.email}}</small>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="user.isActive">
+                  {{user.isActive?'Active':'Inactive'}}
+                </span>
+              </td>
+              <td>
+                <div class="checks">
+                  @for (role of roles; track role.id) {
+                    <label>
+                      <input type="checkbox" [checked]="hasRole(user,role.name)" (change)="toggleRole(user,role.name,$any($event.target).checked)">
+                      {{role.name}}
+                    </label>
+                  }
+                </div>
+              </td>
+              <td>
+                <button class="btn-primary" (click)="save(user)" [disabled]="saving===user.id">
+                  {{saving===user.id?'Saving...':'Save roles'}}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

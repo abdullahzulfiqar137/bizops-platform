@@ -1,0 +1,166 @@
+<div class="split-auth-container">
+  <!-- Left Panel: Mouse Tracking Robot Mascot & Registration Speech -->
+  <div class="hero-visual-panel">
+    <div class="ambient-glow-orb orb-1"></div>
+    <div class="ambient-glow-orb orb-2"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="hero-content">
+      <!-- Dynamic Robot Speech Bubble -->
+      <div class="robot-speech-bubble" [class.success-glow]="robotMood === 'excited'">
+        <span class="speech-badge" [class.badge-excited]="robotMood === 'excited'">
+          @if (robotMood === 'excited') { 🎉 Account Created! }
+          @else { 🚀 Welcome Aboard }
+        </span>
+        <p class="speech-text">{{ speechMessage }}</p>
+        @if (robotMood === 'excited') {
+          <a routerLink="/auth/login" class="btn-bubble-signin">🔑 Go Back & Sign In Now</a>
+        }
+      </div>
+
+      <!-- Interactive 3D Head + Pupil Tracking Robot Mascot -->
+      <div class="robot-mascot" #robotContainer>
+        <div class="robot-head" [class.head-excited]="robotMood === 'excited'" [style.transform]="headTransform">
+          <div class="robot-antenna">
+            <div class="antenna-ball" [class.antenna-gold]="robotMood === 'excited'"></div>
+          </div>
+          <div class="robot-ears left"></div>
+          <div class="robot-ears right"></div>
+          <div class="robot-face">
+            <div class="robot-eye left">
+              <div class="pupil" [style.transform]="pupilTransform"></div>
+            </div>
+            <div class="robot-eye right">
+              <div class="pupil" [style.transform]="pupilTransform"></div>
+            </div>
+          </div>
+          <div class="robot-mouth" [class.mouth-happy]="robotMood === 'excited'"></div>
+        </div>
+        <div class="robot-body">
+          <div class="robot-chest">
+            {{ robotMood === 'excited' ? '🎉 SUCCESS' : '🚀 BIZOPS' }}
+          </div>
+          <div class="robot-arm left"></div>
+          <div class="robot-arm right wave">👋</div>
+        </div>
+      </div>
+
+      <h2 class="guide-title">Create Account Instructions</h2>
+      <ul class="guide-instructions">
+        <li><span class="bullet">✓</span> Enter your full First and Last name.</li>
+        <li><span class="bullet">✓</span> Provide a valid corporate Email address & Username.</li>
+        <li><span class="bullet">✓</span> Create a secure Password (at least 6 characters).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Right Panel: Registration Form -->
+  <div class="auth-form-panel">
+    <div class="form-wrapper">
+      <div class="form-header">
+        <div class="mobile-logo">
+          <span class="logo-icon">🚀</span>
+          <span>AI BizOps System</span>
+        </div>
+        <h2>Register Staff Account</h2>
+        <p>Welcome! Complete the form below to create your account</p>
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert alert-danger">
+          <span>⚠️ {{ errorMessage }}</span>
+        </div>
+      }
+      @if (successMessage) {
+        <div class="alert alert-success">
+          <span>✅ {{ successMessage }}</span>
+        </div>
+      }
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="form-group">
+          <label>Company Name *</label>
+          <div class="input-box">
+            <span class="input-icon">🏢</span>
+            <input type="text" formControlName="companyName" placeholder="Your company or organization" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <div class="input-box">
+              <input type="text" formControlName="firstName" placeholder="First name" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <div class="input-box">
+              <input type="text" formControlName="lastName" placeholder="Last name" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address *</label>
+          <div class="input-box">
+            <span class="input-icon">✉️</span>
+            <input type="email" formControlName="email" placeholder="name@domain.com" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Username *</label>
+            <div class="input-box">
+              <span class="input-icon">👤</span>
+              <input type="text" formControlName="username" placeholder="Username" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <div class="input-box">
+              <span class="input-icon">📞</span>
+              <input type="text" formControlName="phoneNumber" placeholder="+1234567890" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password *</label>
+          <div class="input-box">
+            <span class="input-icon">🔒</span>
+            <input [type]="showPw ? 'text' : 'password'" formControlName="password" placeholder="Minimum 6 characters" />
+            <button type="button" (click)="showPw = !showPw" class="btn-toggle-eye" tabindex="-1">
+              {{ showPw ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Confirm Password *</label>
+          <div class="input-box">
+            <span class="input-icon">🔑</span>
+            <input [type]="showConfirmPw ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Re-enter password" />
+            <button type="button" (click)="showConfirmPw = !showConfirmPw" class="btn-toggle-eye" tabindex="-1">
+              {{ showConfirmPw ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit-glow" [disabled]="loading">
+          @if (loading) {
+            <span class="spinner"></span>
+            <span>Registering Account...</span>
+          } @else {
+            <span>Complete Registration ➔</span>
+          }
+        </button>
+      </form>
+
+      <div class="form-footer">
+        <span>Already have an account?</span>
+        <a routerLink="/auth/login" class="link-register">Sign In Here</a>
+      </div>
+    </div>
+  </div>
+</div>

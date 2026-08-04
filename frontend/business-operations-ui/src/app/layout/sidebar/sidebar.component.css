@@ -1,0 +1,192 @@
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #0f172a;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1e293b;
+  transition: transform 0.3s ease;
+  z-index: 100;
+  flex-shrink: 0;
+}
+.sidebar.collapsed { width: 76px; }
+.sidebar.collapsed .brand-header { justify-content: center; padding: 0 8px; }
+.sidebar.collapsed .brand-link { justify-content: center; padding: 6px; }
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-section,
+.sidebar.collapsed .nav-item > span { display: none; }
+.sidebar.collapsed .nav-menu { padding-inline: 10px; }
+.sidebar.collapsed .nav-item { min-height: 42px; justify-content: center; padding: 9px; }
+
+.brand-header {
+  height: 64px;
+  padding: 0 12px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1e293b;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  flex: 1;
+}
+.brand-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.brand-link:hover .brand-logo-wrap {
+  transform: scale(1.06);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+.brand-link:hover .title {
+  color: #60a5fa;
+}
+
+.brand-logo-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.brand-logo { width: 34px; height: 34px; object-fit: contain; }
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #ffffff;
+  line-height: 1.2;
+  transition: color 0.2s ease;
+}
+.version {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.btn-close-mobile {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.nav-menu {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav-section {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #475569;
+  padding: 14px 12px 4px;
+  text-transform: uppercase;
+}
+.nav-section:first-child {
+  padding-top: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+.nav-item:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
+.nav-item.active {
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.24);
+}
+
+.icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  color: var(--icon-color, #94a3b8);
+  stroke-width: 2;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.nav-item:hover .icon {
+  filter: brightness(1.2);
+  transform: translateX(1px);
+}
+.nav-item.active .icon {
+  color: #fff;
+  filter: none;
+}
+
+/* Category color is limited to icons; navigation surfaces stay restrained. */
+.nav-item[href="/dashboard"] { --icon-color: #60a5fa; }
+.nav-item[href="/ai-insights"] { --icon-color: #c084fc; }
+.nav-item[href="/sales"] { --icon-color: #34d399; }
+.nav-item[href="/purchases"] { --icon-color: #fbbf24; }
+.nav-item[href="/payments"] { --icon-color: #22d3ee; }
+.nav-item[href="/expenses"] { --icon-color: #fb7185; }
+.nav-item[href="/returns"] { --icon-color: #f97316; }
+.nav-item[href="/products"] { --icon-color: #a78bfa; }
+.nav-item[href="/inventory"] { --icon-color: #2dd4bf; }
+.nav-item[href="/categories"] { --icon-color: #f59e0b; }
+.nav-item[href="/customers"] { --icon-color: #38bdf8; }
+.nav-item[href="/suppliers"] { --icon-color: #4ade80; }
+.nav-item[href="/reports"] { --icon-color: #818cf8; }
+.nav-item[href="/accounting"] { --icon-color: #facc15; }
+.nav-item[href="/audit-logs"] { --icon-color: #94a3b8; }
+.nav-item[href="/imports"] { --icon-color: #2dd4bf; }
+.nav-item[href="/notifications"] { --icon-color: #fb7185; }
+.nav-item[href="/team-chat"] { --icon-color: #60a5fa; }
+.nav-item[href="/employees"] { --icon-color: #c084fc; }
+.nav-item[href="/users"] { --icon-color: #38bdf8; }
+.nav-item[href="/business-profile"] { --icon-color: #a78bfa; }
+.nav-item[href="/subscriptions"] { --icon-color: #34d399; }
+.nav-item[href="/backups"] { --icon-color: #fbbf24; }
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .btn-close-mobile {
+    display: block;
+  }
+}

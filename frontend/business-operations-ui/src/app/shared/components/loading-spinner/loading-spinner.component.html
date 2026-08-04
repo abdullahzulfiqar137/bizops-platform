@@ -1,0 +1,6 @@
+<div class="spinner-container" [class.overlay]="overlay">
+  <div class="spinner-ring" [style.width.px]="size" [style.height.px]="size"></div>
+  @if (label) {
+    <span class="spinner-label">{{ label }}</span>
+  }
+</div>

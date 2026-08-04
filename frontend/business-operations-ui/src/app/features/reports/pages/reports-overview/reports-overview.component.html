@@ -1,0 +1,141 @@
+<div class="reports-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Financial Statements & Analytics Reports</h1>
+      <p class="page-subtitle">P&L financial statement, monthly sales breakdowns, and category expense analysis</p>
+    </div>
+  </div>
+
+  <!-- Tab Buttons -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'pnl'" (click)="activeTab = 'pnl'">
+      Profit & Loss Statement (P&L)
+    </button>
+    <button class="tab" [class.active]="activeTab === 'sales'" (click)="activeTab = 'sales'">
+      Sales Performance Summary
+    </button>
+    <button class="tab" [class.active]="activeTab === 'expenses'" (click)="activeTab = 'expenses'">
+      Expense Distribution
+    </button>
+  </div>
+
+  <!-- Tab 1: P&L Statement -->
+  @if (activeTab === 'pnl' && pnl) {
+    <div class="enterprise-card">
+      <h3>Financial Profit and Loss Statement</h3>
+      <p class="subtitle">Generated from actual business invoices, COGS, and operational expenses</p>
+
+      <div class="pnl-table-container">
+        <table class="enterprise-table pnl-table">
+          <tbody>
+            <tr>
+              <td><strong>Gross Sales Revenue</strong></td>
+              <td class="text-right">${{ pnl.grossSales | number:'1.2-2' }}</td>
+            </tr>
+            <tr>
+              <td>Less: Sales Discounts</td>
+              <td class="text-right text-danger">-${{ pnl.totalSalesDiscounts | number:'1.2-2' }}</td>
+            </tr>
+            <tr class="highlight-row">
+              <td><strong>Net Sales Revenue</strong></td>
+              <td class="text-right"><strong>${{ pnl.netSalesRevenue | number:'1.2-2' }}</strong></td>
+            </tr>
+            <tr>
+              <td>Less: Cost of Goods Sold (COGS)</td>
+              <td class="text-right text-danger">-${{ pnl.costOfGoodsSold | number:'1.2-2' }}</td>
+            </tr>
+            <tr class="highlight-row">
+              <td><strong>Gross Profit</strong></td>
+              <td class="text-right"><strong class="text-success">${{ pnl.grossProfit | number:'1.2-2' }}</strong></td>
+            </tr>
+            <tr>
+              <td>Less: Total Operating Expenses</td>
+              <td class="text-right text-danger">-${{ pnl.totalOperatingExpenses | number:'1.2-2' }}</td>
+            </tr>
+            <tr class="final-total-row">
+              <td><strong>NET OPERATING PROFIT</strong></td>
+              <td class="text-right"><strong [class.text-success]="pnl.netProfit >= 0" [class.text-danger]="pnl.netProfit < 0">${{ pnl.netProfit | number:'1.2-2' }}</strong></td>
+            </tr>
+            <tr class="info-row">
+              <td><strong>Net Profit Margin (%)</strong></td>
+              <td class="text-right"><strong>{{ pnl.profitMarginPercentage | number:'1.2-2' }}%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Tab 2: Sales Summary -->
+  @if (activeTab === 'sales' && salesSummary) {
+    <div class="enterprise-card">
+      <h3>Sales Performance Breakdown</h3>
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="label">Total Invoices</span>
+          <span class="val">{{ salesSummary.totalInvoices }}</span>
+        </div>
+        <div class="stat-box">
+          <span class="label">Net Sales Revenue</span>
+          <span class="val">${{ salesSummary.netSalesRevenue | number:'1.2-2' }}</span>
+        </div>
+        <div class="stat-box">
+          <span class="label">Average Invoice Value</span>
+          <span class="val">${{ salesSummary.averageOrderValue | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <h4 class="margin-top">Monthly Trend Breakdown</h4>
+      <table class="enterprise-table margin-top">
+        <thead>
+          <tr>
+            <th>Year / Month</th>
+            <th>Invoices Count</th>
+            <th>Total Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of salesSummary.monthlyBreakdown; track m.month) {
+            <tr>
+              <td>{{ m.monthName }} {{ m.year }}</td>
+              <td>{{ m.invoiceCount }}</td>
+              <td><strong>${{ m.totalRevenue | number:'1.2-2' }}</strong></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Tab 3: Expense Distribution -->
+  @if (activeTab === 'expenses' && expenseSummary) {
+    <div class="enterprise-card">
+      <h3>Operational Expense Category Distribution</h3>
+      <p>Total Expenses Count: {{ expenseSummary.totalExpensesCount }} | Total Amount: ${{ expenseSummary.totalExpenseAmount | number:'1.2-2' }}</p>
+
+      <table class="enterprise-table margin-top">
+        <thead>
+          <tr>
+            <th>Category Name</th>
+            <th>Total Spend ($)</th>
+            <th>Percentage of Total Expenses</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of expenseSummary.categoryBreakdown; track cat.categoryId) {
+            <tr>
+              <td><strong>{{ cat.categoryName }}</strong></td>
+              <td>${{ cat.totalAmount | number:'1.2-2' }}</td>
+              <td>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar" [style.width.%]="cat.percentageOfTotal"></div>
+                  <span>{{ cat.percentageOfTotal | number:'1.1-1' }}%</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

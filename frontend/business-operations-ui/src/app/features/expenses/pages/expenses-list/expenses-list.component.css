@@ -1,0 +1,25 @@
+.expenses-page { display: flex; flex-direction: column; gap: 20px; }
+.btn-create { background: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-input { flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; outline: none; }
+.select-filter { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; background: white; }
+.btn-filter { background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.chip { background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+.text-danger { color: #dc2626; font-weight: 600; }
+.actions { display: flex; gap: 6px; }
+.btn-action { padding: 5px 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+.btn-delete { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 0.85rem; color: #64748b; }
+.page-buttons { display: flex; gap: 8px; }
+.page-buttons button { padding: 6px 12px; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer; }
+.page-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-card { background: white; border-radius: 8px; padding: 24px; width: 100%; max-width: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.form-row { display: flex; gap: 12px; }
+.form-group { margin-bottom: 12px; display: flex; flex-direction: column; flex: 1; }
+.form-group label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; outline: none; background: white; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+.btn-cancel { padding: 8px 16px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; }
+.btn-save { padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }

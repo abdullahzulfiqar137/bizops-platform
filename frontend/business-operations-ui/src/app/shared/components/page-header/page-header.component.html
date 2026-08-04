@@ -1,0 +1,14 @@
+<div class="page-header-container">
+  <div class="header-titles">
+    <h1 class="page-title">{{ title }}</h1>
+    @if (subtitle) {
+      <p class="page-subtitle">{{ subtitle }}</p>
+    }
+  </div>
+  @if (actionLabel) {
+    <button class="btn-primary-action" (click)="action.emit()">
+      <span class="action-icon">{{ actionIcon }}</span>
+      <span>{{ actionLabel }}</span>
+    </button>
+  }
+</div>

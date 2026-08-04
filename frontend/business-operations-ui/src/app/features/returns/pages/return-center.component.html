@@ -1,0 +1,68 @@
+<div class="returns-page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Returns Center</h1>
+      <p class="page-subtitle">Process item-level customer and supplier returns against an existing record.</p>
+    </div>
+  </header>
+
+  <section class="enterprise-card lookup">
+    <div class="mode">
+      <button [class.active]="type==='sales'" (click)="setType('sales')">Sales return</button>
+      <button [class.active]="type==='purchases'" (click)="setType('purchases')">Purchase return</button>
+    </div>
+    <input [(ngModel)]="recordId" [placeholder]="type==='sales'?'Sale ID':'Purchase ID'">
+    <button class="btn-primary" (click)="load()">Load record</button>
+  </section>
+
+  @if (record) {
+    <section class="enterprise-card">
+      <div class="record-head">
+        <div>
+          <span>{{type==='sales'?'Invoice':'Purchase order'}}</span>
+          <h2>{{record.invoiceNumber||record.purchaseOrderNumber}}</h2>
+        </div>
+        <strong>{{record.totalAmount|number:'1.2-2'}}</strong>
+      </div>
+
+      <div class="table-responsive">
+        <table class="enterprise-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Purchased</th>
+              <th>Return quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of record.items; track item.id) {
+              <tr>
+                <td>{{item.productName}}</td>
+                <td>{{item.quantity}}</td>
+                <td>
+                  <input class="qty" type="number" min="0" [max]="item.quantity" [(ngModel)]="quantities[item.id]">
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form">
+        <label>
+          Reason
+          <input [(ngModel)]="reason" placeholder="Reason for return">
+        </label>
+        <label>
+          Notes
+          <textarea [(ngModel)]="notes" rows="2"></textarea>
+        </label>
+        <button class="btn-primary" (click)="submit()">Submit return</button>
+      </div>
+
+      @if (message) {
+        <div class="message">{{message}}</div>
+      }
+    </section>
+  }
+</div>
