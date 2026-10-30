@@ -33,6 +33,12 @@ BizOps brings core business workflows into one workspace, including sales, purch
 - Accounting workflows including journals, chart of accounts, ledgers, trial balance, and balance sheet
 - Database backup and guarded restore workflows
 
+## Demo walkthrough
+
+A recorded walkthrough is available in the portfolio repository:
+
+[Watch the BizOps Platform demo](https://raw.githubusercontent.com/abdullahzulfiqar137/Portfolio/main/public/assets/videos/bizops-platform-demo.mp4)
+
 ## Architecture at a glance
 
 The repository separates the Angular client from the ASP.NET Core API. The API uses Entity Framework Core to access SQL Server.
@@ -156,6 +162,10 @@ The previously published default administrator password was removed from this pu
 - [Production deployment guide](DEPLOYMENT.md)
 - [Database recovery guide](backend/DATABASE-RECOVERY.md)
 - [AI provider setup notes](backend/DEEPSEEK_SETUP.md)
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting and deployment security notes.
 
 ## License
 
