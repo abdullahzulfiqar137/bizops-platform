@@ -1,10 +1,25 @@
 # BizOps — Business Operations Platform
 
-A full-stack business operations and ERP-style platform for managing sales, purchases, inventory, financial records, reporting, and administration in one workspace.
+<p align="center">
+  <strong>A full-stack business operations and ERP-style platform</strong><br/>
+  Sales · Purchases · Inventory · Finance · Reporting · Administration
+</p>
 
-> **Status:** Active development baseline. Feature availability and deployment configuration should be verified against the current source before production use.
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white" alt=".NET 10" />
+  <img src="https://img.shields.io/badge/Angular-20-DD0031?logo=angular&logoColor=white" alt="Angular 20" />
+  <img src="https://img.shields.io/badge/SQL_Server-Database-CC2927?logo=microsoftsqlserver&logoColor=white" alt="SQL Server" />
+  <img src="https://img.shields.io/badge/Entity_Framework_Core-ORM-512BD4" alt="Entity Framework Core" />
+  <img src="https://img.shields.io/badge/Status-Active_Development-orange" alt="Active development" />
+</p>
 
-## Highlights
+## Overview
+
+BizOps brings core business workflows into one workspace, including sales, purchases, inventory, financial records, reporting, and administration.
+
+> **Project status:** Active development baseline. Feature availability and deployment configuration must be verified against the current source before production use.
+
+## Key capabilities
 
 - JWT authentication, refresh-token rotation, password recovery, MFA, account lockout, and role-based access
 - Administrator, manager, and staff roles
@@ -17,6 +32,18 @@ A full-stack business operations and ERP-style platform for managing sales, purc
 - AI assistant with stored conversation history
 - Accounting workflows including journals, chart of accounts, ledgers, trial balance, and balance sheet
 - Database backup and guarded restore workflows
+
+## Architecture at a glance
+
+The repository separates the Angular client from the ASP.NET Core API. The API uses Entity Framework Core to access SQL Server.
+
+```mermaid
+flowchart LR
+    U[User] --> FE[Angular 20 Frontend]
+    FE -->|HTTP API / JWT| API[ASP.NET Core .NET 10 API]
+    API --> EF[Entity Framework Core]
+    EF --> DB[(Microsoft SQL Server)]
+```
 
 ## Technology stack
 
@@ -34,11 +61,13 @@ A full-stack business operations and ERP-style platform for managing sales, purc
 ```text
 .
 ├── frontend/
-│   └── business-operations-ui/       # Angular application
+│   └── business-operations-ui/        # Angular application
 ├── backend/
-│   ├── BusinessOperations.API/       # ASP.NET Core API
-│   ├── BusinessOperations.API.Tests/ # Backend tests
-│   └── BusinessOperations.sln
+│   ├── BusinessOperations.API/        # ASP.NET Core API
+│   ├── BusinessOperations.API.Tests/  # Backend tests
+│   ├── BusinessOperations.sln
+│   ├── DATABASE-RECOVERY.md
+│   └── DEEPSEEK_SETUP.md
 ├── artifacts/
 ├── DEPLOYMENT.md
 └── README.md
@@ -47,20 +76,20 @@ A full-stack business operations and ERP-style platform for managing sales, purc
 ## Prerequisites
 
 - .NET 10 SDK
-- Node.js and npm (use a version supported by the Angular workspace)
-- SQL Server, SQL Server Express, or LocalDB
+- Node.js and npm compatible with the Angular workspace
+- SQL Server, SQL Server Express, or LocalDB for local development
 
 ## Local development
 
-### 1. Configure SQL Server
+### 1. Configure the database
 
-Set `ConnectionStrings:DefaultConnection` in:
+Set `ConnectionStrings:DefaultConnection` in the development configuration:
 
 ```text
 backend/BusinessOperations.API/appsettings.Development.json
 ```
 
-Apply database migrations:
+Apply migrations:
 
 ```powershell
 cd backend/BusinessOperations.API
@@ -73,16 +102,16 @@ If the EF Core CLI is not installed:
 dotnet tool install --global dotnet-ef --version 10.*
 ```
 
-### 2. Run the API
+### 2. Start the API
 
 ```powershell
 cd backend/BusinessOperations.API
 dotnet run --urls http://localhost:5000
 ```
 
-Swagger: http://localhost:5000/swagger
+Swagger: [http://localhost:5000/swagger](http://localhost:5000/swagger)
 
-### 3. Run the Angular application
+### 3. Start the Angular application
 
 ```powershell
 cd frontend/business-operations-ui
@@ -90,27 +119,21 @@ npm install
 npm start
 ```
 
-Frontend: http://localhost:4200
+Frontend: [http://localhost:4200](http://localhost:4200)
 
-The Angular development build is configured to call the local API. For production, the web server must route `/api` requests to the backend as described in [DEPLOYMENT.md](DEPLOYMENT.md).
-
-## Configuration and secrets
-
-Keep database passwords, JWT signing keys, SMTP credentials, administrator bootstrap passwords, and other secrets outside source control. Use environment variables or your hosting platform's secret manager for production configuration.
-
-The application README previously listed a default development administrator password. That password has intentionally been removed from this public documentation. Inspect the local development seed/configuration to understand how a local account is provisioned; use a unique local-only password and never reuse it in a deployed environment. If any published sample credential was ever used on a reachable system, rotate it immediately.
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for production configuration and deployment guidance.
+The Angular development build is configured to call the local API. For production, route `/api` through the web server to the backend as described in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Verification
 
-The project documentation has previously reported backend/frontend test and build results. Re-run checks against the current checkout before relying on those results:
+Run backend checks:
 
 ```powershell
 cd backend
 dotnet test BusinessOperations.sln --configuration Release
 dotnet build BusinessOperations.sln --configuration Release
 ```
+
+Run frontend checks:
 
 ```powershell
 cd frontend/business-operations-ui
@@ -120,11 +143,20 @@ npm run test:ci
 npm run build -- --configuration production
 ```
 
-## Further documentation
+These commands are provided as a verification workflow; their success has not been independently confirmed in this documentation update.
 
-- [Deployment guide](DEPLOYMENT.md)
+## Security and configuration
+
+Never commit database passwords, JWT signing keys, SMTP credentials, administrator bootstrap passwords, API keys, or customer data. Use environment variables or a hosting platform's secret manager.
+
+The previously published default administrator password was removed from this public documentation. Inspect the local development seed/configuration to understand account provisioning. Use unique local-only credentials, and rotate any credential that may have been used on a reachable system.
+
+## Deployment and recovery
+
+- [Production deployment guide](DEPLOYMENT.md)
 - [Database recovery guide](backend/DATABASE-RECOVERY.md)
+- [AI provider setup notes](backend/DEEPSEEK_SETUP.md)
 
 ## License
 
-The existing project documentation describes this software as proprietary. No open-source license is granted by this README; please contact the repository owner for usage permissions.
+The existing project documentation describes this software as proprietary. No open-source license is granted by this README; contact the repository owner for usage permissions.
