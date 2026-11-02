@@ -1,5 +1,7 @@
 # BizOps — Business Operations Platform
 
+[![BizOps CI](https://github.com/abdullahzulfiqar137/bizops-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/abdullahzulfiqar137/bizops-platform/actions/workflows/ci.yml)
+
 <p align="center">
   <strong>A full-stack business operations and ERP-style platform</strong><br/>
   Sales · Purchases · Inventory · Finance · Reporting · Administration
